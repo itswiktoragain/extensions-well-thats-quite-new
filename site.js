@@ -44,13 +44,9 @@ function stripJsonComments(text) {
 
     if (inString) {
       result += char;
-      if (escaped) {
-        escaped = false;
-      } else if (char === "\\") {
-        escaped = true;
-      } else if (char === '"') {
-        inString = false;
-      }
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
       continue;
     }
 
@@ -106,13 +102,11 @@ function bannerImageUrls(path) {
   const names = [filename, filename.toLowerCase()];
   const extensions = ["svg", "png", "webp", "jpg", "jpeg"];
   const urls = [];
-
   for (const name of names) {
     for (const ext of extensions) {
       urls.push(`${RAW_ROOT}/images/${dir ? `${dir}/` : ""}${name}.${ext}`);
     }
   }
-
   return [...new Set(urls)];
 }
 
@@ -122,7 +116,6 @@ function loadFirstWorkingImage(img, wrap, urls, index = 0, onLoad = null, useCor
     img.removeAttribute("src");
     return;
   }
-
   if (useCors) img.crossOrigin = "anonymous";
   img.onload = () => {
     wrap.classList.remove("fallback");
@@ -135,36 +128,30 @@ function loadFirstWorkingImage(img, wrap, urls, index = 0, onLoad = null, useCor
 function relativeLuminance(r, g, b) {
   const convert = (value) => {
     const channel = value / 255;
-    return channel <= 0.03928
-      ? channel / 12.92
-      : ((channel + 0.055) / 1.055) ** 2.4;
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   };
-
   return 0.2126 * convert(r) + 0.7152 * convert(g) + 0.0722 * convert(b);
 }
 
 function applyTileColor(article, r, g, b) {
-  const luminance = relativeLuminance(r, g, b);
-  const lightText = luminance < 0.42;
-
+  const lightText = relativeLuminance(r, g, b) < 0.42;
   article.style.setProperty("--tile-bg", `rgb(${r}, ${g}, ${b})`);
   article.style.setProperty("--tile-fg", lightText ? "#ffffff" : "#111111");
-  article.style.setProperty(
-    "--tile-muted",
-    lightText ? "rgba(255,255,255,.78)" : "rgba(0,0,0,.68)"
-  );
+  article.style.setProperty("--tile-muted", lightText ? "rgba(255,255,255,.78)" : "rgba(0,0,0,.68)");
   article.style.setProperty("--tile-link", lightText ? "#ffffff" : "#003f6b");
 }
 
-function applyProminentBannerColor(img, article) {
+function applyProminentBottomBannerColor(img, article) {
   try {
     const canvas = document.createElement("canvas");
-    canvas.width = 60;
-    canvas.height = 30;
-
+    canvas.width = 80;
+    canvas.height = 40;
     const context = canvas.getContext("2d", { willReadFrequently: true });
     context.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    const bottomStart = Math.floor(canvas.height * 0.75);
+    const sampleHeight = canvas.height - bottomStart;
+    const pixels = context.getImageData(0, bottomStart, canvas.width, sampleHeight).data;
     const buckets = new Map();
 
     for (let i = 0; i < pixels.length; i += 4) {
@@ -180,7 +167,6 @@ function applyProminentBannerColor(img, article) {
         bucket = { count: 0, r: 0, g: 0, b: 0 };
         buckets.set(key, bucket);
       }
-
       bucket.count++;
       bucket.r += r;
       bucket.g += g;
@@ -191,7 +177,6 @@ function applyProminentBannerColor(img, article) {
     for (const bucket of buckets.values()) {
       if (!winner || bucket.count > winner.count) winner = bucket;
     }
-
     if (!winner || winner.count === 0) return;
 
     applyTileColor(
@@ -201,7 +186,7 @@ function applyProminentBannerColor(img, article) {
       Math.round(winner.b / winner.count)
     );
   } catch (error) {
-    console.debug("Could not sample banner color", error);
+    console.debug("Could not sample bottom banner color", error);
   }
 }
 
@@ -210,32 +195,94 @@ function encodeSvgAsDataUri(svg) {
 }
 
 function extractExtensionIcon(source) {
-  const btoaTemplate = source.match(
-    /(?:menuIconURI|iconURI)\s*=\s*["'`]data:image\/svg\+xml;base64,["'`]\s*\+\s*btoa\(\s*`([\s\S]*?)`\s*\)/i
-  );
-  if (btoaTemplate && !btoaTemplate[1].includes("${")) {
-    return encodeSvgAsDataUri(btoaTemplate[1]);
-  }
+  const btoaTemplate = source.match(/(?:menuIconURI|iconURI)\s*=\s*["'`]data:image\/svg\+xml;base64,["'`]\s*\+\s*btoa\(\s*`([\s\S]*?)`\s*\)/i);
+  if (btoaTemplate && !btoaTemplate[1].includes("${")) return encodeSvgAsDataUri(btoaTemplate[1]);
 
-  const encodedTemplate = source.match(
-    /(?:menuIconURI|iconURI)\s*=\s*["'`]data:image\/svg\+xml(?:;charset=utf-8)?[,;][^"'`]*["'`]\s*\+\s*encodeURIComponent\(\s*`([\s\S]*?)`\s*\)/i
-  );
-  if (encodedTemplate && !encodedTemplate[1].includes("${")) {
-    return encodeSvgAsDataUri(encodedTemplate[1]);
-  }
+  const encodedTemplate = source.match(/(?:menuIconURI|iconURI)\s*=\s*["'`]data:image\/svg\+xml(?:;charset=utf-8)?[,;][^"'`]*["'`]\s*\+\s*encodeURIComponent\(\s*`([\s\S]*?)`\s*\)/i);
+  if (encodedTemplate && !encodedTemplate[1].includes("${")) return encodeSvgAsDataUri(encodedTemplate[1]);
 
-  const namedDirect = source.match(
-    /(?:menuIconURI|iconURI)\s*(?:=|:)\s*["'`](data:image\/[^"'`\s]+)["'`]/i
-  );
+  const namedDirect = source.match(/(?:menuIconURI|iconURI)\s*(?:=|:)\s*["'`](data:image\/[^"'`\s]+)["'`]/i);
   if (namedDirect) return namedDirect[1];
 
   const anyDataImage = source.match(/["'`](data:image\/[^"'`\s]+)["'`]/i);
   return anyDataImage ? anyDataImage[1] : null;
 }
 
+function cropTransparentIcon(img, wrap) {
+  if (img.dataset.cropped === "1") {
+    wrap.classList.remove("fallback");
+    return;
+  }
+
+  try {
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    if (!naturalWidth || !naturalHeight) {
+      wrap.classList.remove("fallback");
+      return;
+    }
+
+    const scale = Math.min(1, 256 / Math.max(naturalWidth, naturalHeight));
+    const width = Math.max(1, Math.round(naturalWidth * scale));
+    const height = Math.max(1, Math.round(naturalHeight * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.clearRect(0, 0, width, height);
+    context.drawImage(img, 0, 0, width, height);
+
+    const pixels = context.getImageData(0, 0, width, height).data;
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const alpha = pixels[(y * width + x) * 4 + 3];
+        if (alpha <= 12) continue;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+
+    if (maxX < minX || maxY < minY) {
+      wrap.classList.add("fallback");
+      return;
+    }
+
+    const cropWidth = maxX - minX + 1;
+    const cropHeight = maxY - minY + 1;
+    if (cropWidth === width && cropHeight === height) {
+      wrap.classList.remove("fallback");
+      return;
+    }
+
+    const croppedCanvas = document.createElement("canvas");
+    croppedCanvas.width = cropWidth;
+    croppedCanvas.height = cropHeight;
+    croppedCanvas.getContext("2d").putImageData(
+      context.getImageData(minX, minY, cropWidth, cropHeight),
+      0,
+      0
+    );
+
+    img.dataset.cropped = "1";
+    img.onload = () => wrap.classList.remove("fallback");
+    img.onerror = () => wrap.classList.add("fallback");
+    img.src = croppedCanvas.toDataURL("image/png");
+  } catch (error) {
+    console.debug("Could not crop icon whitespace", error);
+    wrap.classList.remove("fallback");
+  }
+}
+
 function renderCreatorLinks(container, raw) {
   container.replaceChildren();
-
   if (!raw || raw === "Not specified") {
     container.textContent = raw || "Not specified";
     return;
@@ -244,7 +291,6 @@ function renderCreatorLinks(container, raw) {
   const chunks = raw.split(/(,\s*|;\s*|\s+and\s+)/i);
   for (const chunk of chunks) {
     if (!chunk) continue;
-
     if (/^(,\s*|;\s*|\s+and\s+)$/i.test(chunk)) {
       container.append(document.createTextNode(chunk));
       continue;
@@ -258,13 +304,9 @@ function renderCreatorLinks(container, raw) {
 
     const name = match[1].trim() || match[2].trim();
     const href = match[2].trim();
-
     try {
       const url = new URL(href);
-      if (url.protocol !== "http:" && url.protocol !== "https:") {
-        throw new Error("Unsupported protocol");
-      }
-
+      if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Unsupported protocol");
       const link = document.createElement("a");
       link.href = url.href;
       link.textContent = name;
@@ -299,7 +341,7 @@ function buildCard(ext) {
     bannerWrap,
     bannerImageUrls(ext.path),
     0,
-    (img) => applyProminentBannerColor(img, article),
+    (img) => applyProminentBottomBannerColor(img, article),
     true
   );
 
@@ -307,7 +349,7 @@ function buildCard(ext) {
   const iconWrap = fragment.querySelector(".extension-icon-wrap");
   iconImg.alt = ext.name ? `${ext.name} icon` : "Extension icon";
   if (ext.icon) {
-    iconImg.onload = () => iconWrap.classList.remove("fallback");
+    iconImg.onload = () => cropTransparentIcon(iconImg, iconWrap);
     iconImg.onerror = () => iconWrap.classList.add("fallback");
     iconImg.src = ext.icon;
   } else {
@@ -321,11 +363,8 @@ function buildCard(ext) {
   renderCreatorLinks(fragment.querySelector(".meta-by"), ext.by);
   fragment.querySelector(".meta-license").textContent = ext.license;
 
-  const sourceLink = fragment.querySelector(".source-link");
-  sourceLink.href = `${GITHUB_ROOT}/extensions/${ext.path}.js`;
-
-  const rawLink = fragment.querySelector(".raw-link");
-  rawLink.href = `${RAW_ROOT}/extensions/${ext.path}.js`;
+  fragment.querySelector(".source-link").href = `${GITHUB_ROOT}/extensions/${ext.path}.js`;
+  fragment.querySelector(".raw-link").href = `${RAW_ROOT}/extensions/${ext.path}.js`;
 
   const standardKeys = new Set(["Name", "ID", "Description", "By", "License"]);
   const extras = Object.entries(ext.meta).filter(([key, value]) => !standardKeys.has(key) && value);
@@ -343,10 +382,8 @@ function buildCard(ext) {
 function render(filter = "") {
   const query = filter.trim().toLowerCase();
   grid.replaceChildren();
-
   const matches = allExtensions.filter((ext) => !query || ext.search.includes(query));
   for (const ext of matches) grid.append(buildCard(ext));
-
   emptyState.hidden = matches.length !== 0;
   statusEl.textContent = `${matches.length} of ${allExtensions.length} extensions shown`;
 }
@@ -354,11 +391,9 @@ function render(filter = "") {
 async function loadExtension(path) {
   const response = await fetch(`${RAW_ROOT}/extensions/${path}.js`);
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-
   const source = await response.text();
   const meta = parseHeaderMetadata(source);
   const fallbackName = path.split("/").pop().replace(/[-_]/g, " ");
-
   const ext = {
     path,
     meta,
@@ -369,17 +404,7 @@ async function loadExtension(path) {
     by: metadataValue(meta, "By"),
     license: metadataValue(meta, "License")
   };
-
-  ext.search = [
-    ext.name,
-    ext.path,
-    ext.id,
-    ext.description,
-    ext.by,
-    ext.license,
-    ...Object.entries(meta).flat()
-  ].join(" ").toLowerCase();
-
+  ext.search = [ext.name, ext.path, ext.id, ext.description, ext.by, ext.license, ...Object.entries(meta).flat()].join(" ").toLowerCase();
   return ext;
 }
 
@@ -387,22 +412,16 @@ async function main() {
   try {
     const listResponse = await fetch(`${RAW_ROOT}/extensions/extensions.json`);
     if (!listResponse.ok) throw new Error(`Could not load extension list (${listResponse.status})`);
-
     const paths = parseExtensionList(await listResponse.text());
     totalCount.textContent = paths.length;
 
     const settled = await Promise.allSettled(paths.map(loadExtension));
-    allExtensions = settled
-      .filter((result) => result.status === "fulfilled")
-      .map((result) => result.value);
-
+    allExtensions = settled.filter((result) => result.status === "fulfilled").map((result) => result.value);
     loadedCount.textContent = allExtensions.length;
     render();
 
     const failed = settled.length - allExtensions.length;
-    if (failed) {
-      statusEl.textContent += ` · ${failed} file${failed === 1 ? "" : "s"} could not be read`;
-    }
+    if (failed) statusEl.textContent += ` · ${failed} file${failed === 1 ? "" : "s"} could not be read`;
   } catch (error) {
     console.error(error);
     statusEl.textContent = `Could not load the extension gallery: ${error.message}`;
