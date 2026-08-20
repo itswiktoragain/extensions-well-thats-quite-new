@@ -1,19 +1,30 @@
-# TurboWarp Extension Gallery
+# Extensions That's Quite New
 
-User-contributed unsandboxed extension gallery for TurboWarp.
+A personal fork of the TurboWarp extension gallery with newer and experimental extension work.
 
-https://extensions.turbowarp.org/
+## Extension gallery
 
-## Contributing
+The GitHub Pages site for this branch provides a searchable gallery of every extension listed in `extensions/extensions.json`.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+It reads normal extension metadata directly from each JavaScript file, including:
+
+- Name
+- ID
+- Description
+- By
+- License
+- Additional header metadata when present
+
+The gallery also links directly to each extension's source and raw JavaScript file.
+
+## Branch separation
+
+The website and this customized README live on the `gh-pages` branch so they do not become part of the upstream-facing TurboWarp pull request based on `master`.
+
+## Upstream
+
+This repository is based on the [TurboWarp extension gallery](https://github.com/TurboWarp/extensions).
 
 ## License
 
-Extensions (in the `extensions` folder) will have a comment at the top of the file describing the license for the code. In the past [MIT](./licenses/MIT.txt) was the default, however now [MPL-2.0](./licenses/MPL-2.0.txt) is recommended. Some extensions may contain a mix of several.
-
-Sample projects (in the `samples` folder) are licensed under [CC-BY 4.0](./licenses/CC-BY-4.0.txt).
-
-Everything else, such as the extension images, development server, and website are licensed under the [GNU General Public License version 3](licenses/GPL-3.0.txt).
-
-See [images/README.md](images/README.md) for attribution information for each image.
+Extensions keep the license declared in their own source headers. Other inherited repository content keeps its existing upstream licensing terms.
