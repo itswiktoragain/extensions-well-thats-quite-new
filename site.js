@@ -116,16 +116,93 @@ function bannerImageUrls(path) {
   return [...new Set(urls)];
 }
 
-function loadFirstWorkingImage(img, wrap, urls, index = 0) {
+function loadFirstWorkingImage(img, wrap, urls, index = 0, onLoad = null, useCors = false) {
   if (index >= urls.length) {
     wrap.classList.add("fallback");
     img.removeAttribute("src");
     return;
   }
 
-  img.onload = () => wrap.classList.remove("fallback");
-  img.onerror = () => loadFirstWorkingImage(img, wrap, urls, index + 1);
+  if (useCors) img.crossOrigin = "anonymous";
+  img.onload = () => {
+    wrap.classList.remove("fallback");
+    if (onLoad) onLoad(img);
+  };
+  img.onerror = () => loadFirstWorkingImage(img, wrap, urls, index + 1, onLoad, useCors);
   img.src = urls[index];
+}
+
+function relativeLuminance(r, g, b) {
+  const convert = (value) => {
+    const channel = value / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  };
+
+  return 0.2126 * convert(r) + 0.7152 * convert(g) + 0.0722 * convert(b);
+}
+
+function applyTileColor(article, r, g, b) {
+  const luminance = relativeLuminance(r, g, b);
+  const lightText = luminance < 0.42;
+
+  article.style.setProperty("--tile-bg", `rgb(${r}, ${g}, ${b})`);
+  article.style.setProperty("--tile-fg", lightText ? "#ffffff" : "#111111");
+  article.style.setProperty(
+    "--tile-muted",
+    lightText ? "rgba(255,255,255,.78)" : "rgba(0,0,0,.68)"
+  );
+  article.style.setProperty("--tile-link", lightText ? "#ffffff" : "#003f6b");
+}
+
+function applyProminentBannerColor(img, article) {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 60;
+    canvas.height = 30;
+
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    const buckets = new Map();
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i];
+      const g = pixels[i + 1];
+      const b = pixels[i + 2];
+      const a = pixels[i + 3];
+      if (a < 128) continue;
+
+      const key = `${r >> 5}:${g >> 5}:${b >> 5}`;
+      let bucket = buckets.get(key);
+      if (!bucket) {
+        bucket = { count: 0, r: 0, g: 0, b: 0 };
+        buckets.set(key, bucket);
+      }
+
+      bucket.count++;
+      bucket.r += r;
+      bucket.g += g;
+      bucket.b += b;
+    }
+
+    let winner = null;
+    for (const bucket of buckets.values()) {
+      if (!winner || bucket.count > winner.count) winner = bucket;
+    }
+
+    if (!winner || winner.count === 0) return;
+
+    applyTileColor(
+      article,
+      Math.round(winner.r / winner.count),
+      Math.round(winner.g / winner.count),
+      Math.round(winner.b / winner.count)
+    );
+  } catch (error) {
+    console.debug("Could not sample banner color", error);
+  }
 }
 
 function encodeSvgAsDataUri(svg) {
@@ -217,7 +294,14 @@ function buildCard(ext) {
   const bannerImg = fragment.querySelector(".extension-banner");
   const bannerWrap = fragment.querySelector(".extension-banner-wrap");
   bannerImg.alt = ext.name ? `${ext.name} banner` : "Extension banner";
-  loadFirstWorkingImage(bannerImg, bannerWrap, bannerImageUrls(ext.path));
+  loadFirstWorkingImage(
+    bannerImg,
+    bannerWrap,
+    bannerImageUrls(ext.path),
+    0,
+    (img) => applyProminentBannerColor(img, article),
+    true
+  );
 
   const iconImg = fragment.querySelector(".extension-icon");
   const iconWrap = fragment.querySelector(".extension-icon-wrap");
