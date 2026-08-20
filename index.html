@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Browse every extension in Extensions That's Quite New with metadata read directly from the repository." />
     <title>Extensions That's Quite New</title>
-    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="site.css?v=3" />
   </head>
   <body>
     <header class="hero">
@@ -72,37 +72,46 @@
 
     <template id="extensionCardTemplate">
       <article class="extension-card">
-        <div class="card-top">
-          <div class="extension-icon-wrap">
-            <img class="extension-icon" alt="" loading="lazy" />
-            <span class="extension-icon-fallback" aria-hidden="true"></span>
-          </div>
-          <div class="title-wrap">
-            <h3 class="extension-name"></h3>
-            <p class="extension-path"></p>
-          </div>
+        <div class="extension-banner-wrap">
+          <img class="extension-banner" alt="" loading="lazy" />
+          <div class="extension-banner-fallback" aria-hidden="true"></div>
         </div>
 
-        <p class="extension-description"></p>
+        <div class="card-body">
+          <div class="card-top">
+            <div class="extension-icon-wrap">
+              <img class="extension-icon" alt="" loading="lazy" />
+              <svg class="extension-icon-fallback" viewBox="0 0 64 64" aria-hidden="true">
+                <path d="M49 17c-8-8-22-8-30 0-7 7-7 19 0 26 6 6 16 6 22 0 5-5 5-13 0-18-4-4-10-4-14 0-3 3-3 8 0 11 2 2 6 2 8 0 2-2 2-4 0-6" />
+              </svg>
+            </div>
+            <div class="title-wrap">
+              <h3 class="extension-name"></h3>
+              <p class="extension-path"></p>
+            </div>
+          </div>
 
-        <dl class="metadata">
-          <div><dt>ID</dt><dd class="meta-id"></dd></div>
-          <div><dt>By</dt><dd class="meta-by"></dd></div>
-          <div><dt>License</dt><dd class="meta-license"></dd></div>
-        </dl>
+          <p class="extension-description"></p>
 
-        <details class="extra-details" hidden>
-          <summary>More metadata</summary>
-          <dl class="extra-metadata"></dl>
-        </details>
+          <dl class="metadata">
+            <div><dt>ID</dt><dd class="meta-id"></dd></div>
+            <div><dt>By</dt><dd class="meta-by"></dd></div>
+            <div><dt>License</dt><dd class="meta-license"></dd></div>
+          </dl>
 
-        <div class="card-actions">
-          <a class="source-link" target="_blank" rel="noreferrer">View source</a>
-          <a class="raw-link" target="_blank" rel="noreferrer">Raw JS</a>
+          <details class="extra-details" hidden>
+            <summary>More metadata</summary>
+            <dl class="extra-metadata"></dl>
+          </details>
+
+          <div class="card-actions">
+            <a class="source-link" target="_blank" rel="noreferrer">View source</a>
+            <a class="raw-link" target="_blank" rel="noreferrer">Raw JS</a>
+          </div>
         </div>
       </article>
     </template>
 
-    <script src="site.js" defer></script>
+    <script src="site.js?v=3" defer></script>
   </body>
 </html>

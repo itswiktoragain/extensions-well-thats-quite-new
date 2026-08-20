@@ -99,29 +99,105 @@ function metadataValue(meta, key, fallback = "Not specified") {
   return meta[key] || fallback;
 }
 
-function candidateImageUrls(path) {
+function bannerImageUrls(path) {
   const parts = path.split("/");
   const filename = parts.pop();
   const dir = parts.join("/");
-  const lowerFilename = filename.toLowerCase();
-  const bases = [filename, lowerFilename];
+  const names = [filename, filename.toLowerCase()];
   const extensions = ["svg", "png", "webp", "jpg", "jpeg"];
   const urls = [];
-  for (const base of bases) {
+
+  for (const name of names) {
     for (const ext of extensions) {
-      urls.push(`${RAW_ROOT}/images/${dir ? `${dir}/` : ""}${base}.${ext}`);
+      urls.push(`${RAW_ROOT}/images/${dir ? `${dir}/` : ""}${name}.${ext}`);
     }
   }
+
   return [...new Set(urls)];
 }
 
 function loadFirstWorkingImage(img, wrap, urls, index = 0) {
   if (index >= urls.length) {
     wrap.classList.add("fallback");
+    img.removeAttribute("src");
     return;
   }
+
+  img.onload = () => wrap.classList.remove("fallback");
   img.onerror = () => loadFirstWorkingImage(img, wrap, urls, index + 1);
   img.src = urls[index];
+}
+
+function encodeSvgAsDataUri(svg) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function extractExtensionIcon(source) {
+  const btoaTemplate = source.match(
+    /(?:menuIconURI|iconURI)\s*=\s*["'`]data:image\/svg\+xml;base64,["'`]\s*\+\s*btoa\(\s*`([\s\S]*?)`\s*\)/i
+  );
+  if (btoaTemplate && !btoaTemplate[1].includes("${")) {
+    return encodeSvgAsDataUri(btoaTemplate[1]);
+  }
+
+  const encodedTemplate = source.match(
+    /(?:menuIconURI|iconURI)\s*=\s*["'`]data:image\/svg\+xml(?:;charset=utf-8)?[,;][^"'`]*["'`]\s*\+\s*encodeURIComponent\(\s*`([\s\S]*?)`\s*\)/i
+  );
+  if (encodedTemplate && !encodedTemplate[1].includes("${")) {
+    return encodeSvgAsDataUri(encodedTemplate[1]);
+  }
+
+  const namedDirect = source.match(
+    /(?:menuIconURI|iconURI)\s*(?:=|:)\s*["'`](data:image\/[^"'`\s]+)["'`]/i
+  );
+  if (namedDirect) return namedDirect[1];
+
+  const anyDataImage = source.match(/["'`](data:image\/[^"'`\s]+)["'`]/i);
+  return anyDataImage ? anyDataImage[1] : null;
+}
+
+function renderCreatorLinks(container, raw) {
+  container.replaceChildren();
+
+  if (!raw || raw === "Not specified") {
+    container.textContent = raw || "Not specified";
+    return;
+  }
+
+  const chunks = raw.split(/(,\s*|;\s*|\s+and\s+)/i);
+  for (const chunk of chunks) {
+    if (!chunk) continue;
+
+    if (/^(,\s*|;\s*|\s+and\s+)$/i.test(chunk)) {
+      container.append(document.createTextNode(chunk));
+      continue;
+    }
+
+    const match = chunk.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+    if (!match) {
+      container.append(document.createTextNode(chunk));
+      continue;
+    }
+
+    const name = match[1].trim() || match[2].trim();
+    const href = match[2].trim();
+
+    try {
+      const url = new URL(href);
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        throw new Error("Unsupported protocol");
+      }
+
+      const link = document.createElement("a");
+      link.href = url.href;
+      link.textContent = name;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      container.append(link);
+    } catch {
+      container.append(document.createTextNode(chunk));
+    }
+  }
 }
 
 function makeMetaRow(key, value) {
@@ -137,21 +213,33 @@ function makeMetaRow(key, value) {
 function buildCard(ext) {
   const fragment = template.content.cloneNode(true);
   const article = fragment.querySelector(".extension-card");
-  const img = fragment.querySelector(".extension-icon");
-  const wrap = fragment.querySelector(".extension-icon-wrap");
+
+  const bannerImg = fragment.querySelector(".extension-banner");
+  const bannerWrap = fragment.querySelector(".extension-banner-wrap");
+  bannerImg.alt = ext.name ? `${ext.name} banner` : "Extension banner";
+  loadFirstWorkingImage(bannerImg, bannerWrap, bannerImageUrls(ext.path));
+
+  const iconImg = fragment.querySelector(".extension-icon");
+  const iconWrap = fragment.querySelector(".extension-icon-wrap");
+  iconImg.alt = ext.name ? `${ext.name} icon` : "Extension icon";
+  if (ext.icon) {
+    iconImg.onload = () => iconWrap.classList.remove("fallback");
+    iconImg.onerror = () => iconWrap.classList.add("fallback");
+    iconImg.src = ext.icon;
+  } else {
+    iconWrap.classList.add("fallback");
+  }
 
   fragment.querySelector(".extension-name").textContent = ext.name;
   fragment.querySelector(".extension-path").textContent = ext.path;
   fragment.querySelector(".extension-description").textContent = ext.description;
   fragment.querySelector(".meta-id").textContent = ext.id;
-  fragment.querySelector(".meta-by").textContent = ext.by;
+  renderCreatorLinks(fragment.querySelector(".meta-by"), ext.by);
   fragment.querySelector(".meta-license").textContent = ext.license;
-
-  img.alt = ext.name ? `${ext.name} icon` : "Extension icon";
-  loadFirstWorkingImage(img, wrap, candidateImageUrls(ext.path));
 
   const sourceLink = fragment.querySelector(".source-link");
   sourceLink.href = `${GITHUB_ROOT}/extensions/${ext.path}.js`;
+
   const rawLink = fragment.querySelector(".raw-link");
   rawLink.href = `${RAW_ROOT}/extensions/${ext.path}.js`;
 
@@ -164,24 +252,17 @@ function buildCard(ext) {
     for (const [key, value] of extras) dl.append(makeMetaRow(key, value));
   }
 
-  article.dataset.search = [
-    ext.name,
-    ext.path,
-    ext.id,
-    ext.description,
-    ext.by,
-    ext.license,
-    ...Object.entries(ext.meta).flat()
-  ].join(" ").toLowerCase();
-
+  article.dataset.search = ext.search;
   return fragment;
 }
 
 function render(filter = "") {
   const query = filter.trim().toLowerCase();
   grid.replaceChildren();
+
   const matches = allExtensions.filter((ext) => !query || ext.search.includes(query));
   for (const ext of matches) grid.append(buildCard(ext));
+
   emptyState.hidden = matches.length !== 0;
   statusEl.textContent = `${matches.length} of ${allExtensions.length} extensions shown`;
 }
@@ -189,19 +270,32 @@ function render(filter = "") {
 async function loadExtension(path) {
   const response = await fetch(`${RAW_ROOT}/extensions/${path}.js`);
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+
   const source = await response.text();
   const meta = parseHeaderMetadata(source);
   const fallbackName = path.split("/").pop().replace(/[-_]/g, " ");
+
   const ext = {
     path,
     meta,
+    icon: extractExtensionIcon(source),
     name: metadataValue(meta, "Name", fallbackName),
     id: metadataValue(meta, "ID"),
     description: metadataValue(meta, "Description", "No description provided."),
     by: metadataValue(meta, "By"),
     license: metadataValue(meta, "License")
   };
-  ext.search = [ext.name, ext.path, ext.id, ext.description, ext.by, ext.license, ...Object.entries(meta).flat()].join(" ").toLowerCase();
+
+  ext.search = [
+    ext.name,
+    ext.path,
+    ext.id,
+    ext.description,
+    ext.by,
+    ext.license,
+    ...Object.entries(meta).flat()
+  ].join(" ").toLowerCase();
+
   return ext;
 }
 
@@ -209,6 +303,7 @@ async function main() {
   try {
     const listResponse = await fetch(`${RAW_ROOT}/extensions/extensions.json`);
     if (!listResponse.ok) throw new Error(`Could not load extension list (${listResponse.status})`);
+
     const paths = parseExtensionList(await listResponse.text());
     totalCount.textContent = paths.length;
 
