@@ -6,6 +6,13 @@ cached-extension-dependencies
 build
 build-l10n
 
+# Pages-only files (kept on gh-pages, not on the upstream-facing master branch)
+/index.html
+/site.css
+/site.js
+/.nojekyll
+/README.md
+
 # Various operating system caches
 thumbs.db
 desktop.ini
