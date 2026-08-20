@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Browse every extension in Extensions That's Quite New with metadata read directly from the repository." />
+    <title>Extensions That's Quite New</title>
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">TurboWarp extension gallery fork</p>
+        <h1>Extensions That's Quite New</h1>
+        <p class="hero-copy">
+          A live gallery of every extension currently listed in this repository.
+          Metadata is read directly from each extension file on <code>master</code>.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/itswiktoragain/extensions-well-thats-quite-new">View repository</a>
+          <a class="button" href="https://extensions.turbowarp.org/">TurboWarp Extensions</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="overview" aria-labelledby="overview-title">
+        <div>
+          <p class="section-kicker">Repository overview</p>
+          <h2 id="overview-title">Live from the extension list</h2>
+          <p>
+            The gallery reads <code>extensions/extensions.json</code>, then loads the normal
+            extension header metadata such as Name, ID, Description, By, and License.
+          </p>
+        </div>
+        <div class="stats" aria-live="polite">
+          <div class="stat">
+            <strong id="totalCount">—</strong>
+            <span>extensions</span>
+          </div>
+          <div class="stat">
+            <strong id="loadedCount">—</strong>
+            <span>metadata loaded</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="all-extensions-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Browse</p>
+            <h2 id="all-extensions-title">All extensions</h2>
+          </div>
+          <label class="search-box">
+            <span>Search extensions</span>
+            <input id="searchInput" type="search" placeholder="Name, author, ID, license…" autocomplete="off" />
+          </label>
+        </div>
+
+        <div id="status" class="status" role="status">Loading extension list…</div>
+        <div id="extensionGrid" class="extension-grid" aria-live="polite"></div>
+        <p id="emptyState" class="empty-state" hidden>No extensions match that search.</p>
+      </section>
+
+      <section class="about" aria-labelledby="about-title">
+        <p class="section-kicker">About</p>
+        <h2 id="about-title">About this gallery</h2>
+        <p>
+          This site is intentionally separate from the upstream-facing pull request branch.
+          It displays the fork's current <code>master</code> extension list without adding
+          website files to that branch.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Extensions That's Quite New · Based on the
+        <a href="https://github.com/TurboWarp/extensions">TurboWarp extension gallery</a>
+      </p>
+    </footer>
+
+    <template id="extensionCardTemplate">
+      <article class="extension-card">
+        <div class="card-top">
+          <div class="extension-icon-wrap">
+            <img class="extension-icon" alt="" loading="lazy" />
+            <span class="extension-icon-fallback" aria-hidden="true"></span>
+          </div>
+          <div class="title-wrap">
+            <h3 class="extension-name"></h3>
+            <p class="extension-path"></p>
+          </div>
+        </div>
+
+        <p class="extension-description"></p>
+
+        <dl class="metadata">
+          <div><dt>ID</dt><dd class="meta-id"></dd></div>
+          <div><dt>By</dt><dd class="meta-by"></dd></div>
+          <div><dt>License</dt><dd class="meta-license"></dd></div>
+        </dl>
+
+        <details class="extra-details" hidden>
+          <summary>More metadata</summary>
+          <dl class="extra-metadata"></dl>
+        </details>
+
+        <div class="card-actions">
+          <a class="source-link" target="_blank" rel="noreferrer">View source</a>
+          <a class="raw-link" target="_blank" rel="noreferrer">Raw JS</a>
+        </div>
+      </article>
+    </template>
+
+    <script src="site.js" defer></script>
+  </body>
+</html>
