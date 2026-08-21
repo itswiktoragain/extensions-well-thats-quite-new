@@ -21,7 +21,6 @@
     Math.max(1, Math.min(40, Math.floor(Cast.toNumber(value) || 1)));
   const offset = (value) =>
     Math.max(0, Math.floor(Cast.toNumber(value) || 0));
-
   const item = (text, value) => ({ text: Scratch.translate(text), value });
 
   const getPath = (object, path) => {
@@ -329,10 +328,7 @@
           },
           searchTypes: {
             acceptReporters: true,
-            items: [
-              item("projects", "projects"),
-              item("studios", "studios"),
-            ],
+            items: [item("projects", "projects"), item("studios", "studios")],
           },
           modes: {
             acceptReporters: true,
@@ -377,23 +373,9 @@
       this.lastSuccess = false;
 
       try {
-        if (!(await Scratch.canFetch(url))) {
-          this.lastError = Scratch.translate("Network request was not allowed.");
-          return null;
-        }
-
-        // Plain browser fetch is intentional. Scratch.canFetch() is checked above
-        // so TurboWarp's network permission is still respected.
-        // eslint-disable-next-line extension/use-scratch-fetch
-        const response = await fetch(url, {
-          method: "GET",
-          mode: "cors",
-          credentials: "omit",
-          cache: "no-store",
-          headers: { Accept: "application/json" },
-        });
-
+        const response = await Scratch.fetch(url);
         this.lastStatus = response.status;
+
         if (!response.ok) {
           this.lastError = `HTTP ${response.status} ${response.statusText}`.trim();
           return null;
@@ -405,13 +387,10 @@
         this.cache.set(url, { time: now, status: response.status, data });
         return data;
       } catch (error) {
-        const message =
+        this.lastError =
           error instanceof Error
             ? `${error.name}: ${error.message}`
             : Cast.toString(error);
-        this.lastError = message.includes("Failed to fetch")
-          ? `${message} (Scratch may be blocking browser CORS)`
-          : message;
         return null;
       }
     }
