@@ -119,15 +119,8 @@
       };
     }
 
-    _isChromiumAndroid() {
-      const userAgent = navigator.userAgent;
-      const isAndroid = /Android/i.test(userAgent);
-      const isChromiumBased = /(?:Chrome|Chromium|CriOS|EdgA|OPR|SamsungBrowser|Vivaldi)\//i.test(userAgent);
-      return isAndroid && isChromiumBased;
-    }
-
     supported() {
-      return this._isChromiumAndroid() && "DeviceMotionEvent" in window && "DeviceOrientationEvent" in window;
+      return "DeviceMotionEvent" in window && "DeviceOrientationEvent" in window;
     }
 
     async start() {
@@ -135,7 +128,7 @@
       this.lastError = "";
 
       if (!this.supported()) {
-        this.lastError = Scratch.translate("Only compatible with Chromium-based browsers on Android.");
+        this.lastError = Scratch.translate("Device motion and orientation sensors are not available in this browser.");
         return;
       }
 
