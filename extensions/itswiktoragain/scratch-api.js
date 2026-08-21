@@ -14,8 +14,7 @@
   const { ArgumentType, BlockType, Cast } = Scratch;
   const API = "https://api.scratch.mit.edu";
   const TRAMPOLINE = "https://trampoline.turbowarp.org";
-  const ALL_ORIGINS = "https://api.allorigins.win/raw?url=";
-  const CODE_TABS = "https://api.codetabs.com/v1/proxy?quest=";
+  const JINA_READER = "https://r.jina.ai/";
 
   const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#ffbb52"/><g fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"><ellipse cx="26" cy="14" rx="11" ry="5"/><path d="M15 14v8c0 3 5 5 11 5s11-2 11-5v-8M15 22v8c0 3 5 5 11 5s11-2 11-5v-8M15 30v7c0 3 5 5 11 5s11-2 11-5v-7"/></g></svg>`;
   const iconURI = `data:image/svg+xml,${encodeURIComponent(iconSvg)}`;
@@ -26,6 +25,34 @@
   const offset = (value) =>
     Math.max(0, Math.floor(Cast.toNumber(value) || 0));
   const item = (text, value) => ({ text: Scratch.translate(text), value });
+
+  const parseJSONPayload = (text) => {
+    let value = Cast.toString(text).trim();
+    const fenced = value.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+    if (fenced) value = fenced[1].trim();
+
+    try {
+      return JSON.parse(value);
+    } catch {
+      const objectStart = value.indexOf("{");
+      const arrayStart = value.indexOf("[");
+      let start = -1;
+      let end = -1;
+
+      if (objectStart !== -1 && (arrayStart === -1 || objectStart < arrayStart)) {
+        start = objectStart;
+        end = value.lastIndexOf("}");
+      } else if (arrayStart !== -1) {
+        start = arrayStart;
+        end = value.lastIndexOf("]");
+      }
+
+      if (start !== -1 && end > start) {
+        return JSON.parse(value.slice(start, end + 1));
+      }
+      throw new Error("Reader returned data that was not valid JSON.");
+    }
+  };
 
   const getPath = (object, path) => {
     let value = object;
@@ -375,14 +402,37 @@
 
     async fetchWithFallback(url, path) {
       const errors = [];
-      let fallbackResponse = null;
 
+      // Use TurboWarp's Scratch-specific relay first when it supports the route.
+      // This is normal browser fetch(), not Scratch.fetch().
       const trampolineURL = trampolineFor(path);
       if (trampolineURL) {
         try {
-          const response = await Scratch.fetch(trampolineURL);
-          if (response.ok || response.status === 404) return response;
-          fallbackResponse = response;
+          // eslint-disable-next-line extension/use-scratch-fetch -- normal fetch() is intentional here
+          const response = await fetch(trampolineURL, {
+            method: "GET",
+            credentials: "omit",
+            cache: "no-store",
+          });
+
+          if (response.ok) {
+            return {
+              status: response.status,
+              statusText: response.statusText,
+              data: await response.json(),
+              source: "trampoline",
+            };
+          }
+
+          if (response.status === 404) {
+            return {
+              status: 404,
+              statusText: response.statusText || "Not Found",
+              data: null,
+              source: "trampoline",
+            };
+          }
+
           errors.push(`Trampoline HTTP ${response.status}`);
         } catch (error) {
           errors.push(
@@ -393,28 +443,60 @@
         }
       }
 
-      const relayURLs = [
-        `${ALL_ORIGINS}${encodeURIComponent(url)}`,
-        `${CODE_TABS}${encodeURIComponent(url)}`,
-      ];
+      // Scratch itself only allows browser CORS from scratch.mit.edu.
+      // Jina Reader performs the request server-side, while this extension still
+      // uses the browser's normal fetch() API as requested.
+      const readerURL = `${JINA_READER}${url}`;
+      try {
+        // eslint-disable-next-line extension/use-scratch-fetch -- normal fetch() is intentional here
+        const response = await fetch(readerURL, {
+          method: "GET",
+          credentials: "omit",
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+        });
 
-      for (const relayURL of relayURLs) {
-        try {
-          const response = await Scratch.fetch(relayURL);
-          if (response.ok || response.status === 404) return response;
-          fallbackResponse = response;
-          errors.push(`Relay HTTP ${response.status}`);
-        } catch (error) {
-          errors.push(
-            `Relay: ${
-              error instanceof Error ? error.message : Cast.toString(error)
-            }`
-          );
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
         }
+
+        const wrapper = await response.json();
+        const warning = wrapper?.data?.warning;
+        const statusMatch =
+          typeof warning === "string"
+            ? warning.match(/Target URL returned error (\d{3})/i)
+            : null;
+        const targetStatus = statusMatch ? Number(statusMatch[1]) : 200;
+
+        if (targetStatus < 200 || targetStatus >= 300) {
+          return {
+            status: targetStatus,
+            statusText: warning || `Scratch API HTTP ${targetStatus}`,
+            data: null,
+            source: "reader",
+          };
+        }
+
+        const content = wrapper?.data?.content;
+        if (typeof content !== "string") {
+          throw new Error("Reader response did not contain page content.");
+        }
+
+        return {
+          status: 200,
+          statusText: "OK",
+          data: parseJSONPayload(content),
+          source: "reader",
+        };
+      } catch (error) {
+        errors.push(
+          `Reader: ${
+            error instanceof Error ? error.message : Cast.toString(error)
+          }`
+        );
       }
 
-      if (fallbackResponse) return fallbackResponse;
-      throw new Error(errors.join("; ") || "All Scratch API relays failed.");
+      throw new Error(errors.join("; ") || "Scratch API request failed.");
     }
 
     async request(path) {
@@ -440,15 +522,15 @@
       this.lastSuccess = false;
 
       try {
-        const response = await this.fetchWithFallback(url, cleanPath);
-        this.lastStatus = response.status;
+        const result = await this.fetchWithFallback(url, cleanPath);
+        this.lastStatus = result.status;
 
-        if (!response.ok) {
-          this.lastError = `HTTP ${response.status} ${response.statusText}`.trim();
+        if (result.status < 200 || result.status >= 300) {
+          this.lastError = `HTTP ${result.status} ${result.statusText}`.trim();
           return null;
         }
 
-        let data = await response.json();
+        let data = result.data;
 
         // TurboWarp's studio-project relay always returns up to 40 entries.
         // Preserve the requested Scratch API limit when that relay was used.
@@ -467,7 +549,7 @@
         this.lastSuccess = true;
         this.cache.set(url, {
           time: now,
-          status: response.status,
+          status: result.status,
           data,
         });
         return data;
