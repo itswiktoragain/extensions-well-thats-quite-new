@@ -1,6 +1,6 @@
 // Name: Scratch API
 // ID: itswiktoragainscratchapi
-// Description: Get public user, project, studio, search, explore, news, featured, and other data from the official Scratch API.
+// Description: Get public user, project, studio, news, featured, and other data from the official Scratch API.
 // By: itswiktoragain
 // License: MPL-2.0
 /* eslint-disable extension/use-scratch-fetch */
@@ -134,31 +134,6 @@
           "---",
           { blockType: BlockType.LABEL, text: Scratch.translate("Discover") },
           {
-            opcode: "search",
-            blockType: BlockType.REPORTER,
-            text: Scratch.translate("search [TYPE] for [QUERY] mode [MODE] limit [LIMIT] offset [OFFSET]"),
-            arguments: {
-              TYPE: { type: ArgumentType.STRING, menu: "searchTypes" },
-              QUERY: { type: ArgumentType.STRING, defaultValue: "platformer" },
-              MODE: { type: ArgumentType.STRING, menu: "modes" },
-              LIMIT: { type: ArgumentType.NUMBER, defaultValue: 20 },
-              OFFSET: { type: ArgumentType.NUMBER, defaultValue: 0 },
-            },
-            disableMonitor: true,
-          },
-          {
-            opcode: "explore",
-            blockType: BlockType.REPORTER,
-            text: Scratch.translate("explore [TYPE] mode [MODE] limit [LIMIT] offset [OFFSET]"),
-            arguments: {
-              TYPE: { type: ArgumentType.STRING, menu: "searchTypes" },
-              MODE: { type: ArgumentType.STRING, menu: "modes" },
-              LIMIT: { type: ArgumentType.NUMBER, defaultValue: 20 },
-              OFFSET: { type: ArgumentType.NUMBER, defaultValue: 0 },
-            },
-            disableMonitor: true,
-          },
-          {
             opcode: "feed",
             blockType: BlockType.REPORTER,
             text: Scratch.translate("Scratch [FEED] JSON"),
@@ -263,14 +238,6 @@
           studioLists: {
             acceptReporters: true,
             items: [item("projects", "projects"), item("comments", "comments"), item("curators", "curators"), item("managers", "managers")],
-          },
-          searchTypes: {
-            acceptReporters: true,
-            items: [item("projects", "projects"), item("studios", "studios")],
-          },
-          modes: {
-            acceptReporters: true,
-            items: [item("trending", "trending"), item("popular", "popular"), item("recent", "recent")],
           },
           feeds: {
             acceptReporters: true,
@@ -392,18 +359,6 @@
       const type = Cast.toString(args.TYPE);
       if (!["projects", "comments", "curators", "managers"].includes(type)) return "";
       return this.json(`/studios/${encode(args.ID)}/${type}?limit=${limit(args.LIMIT)}&offset=${offset(args.OFFSET)}`);
-    }
-
-    search(args) {
-      const type = Cast.toString(args.TYPE) === "studios" ? "studios" : "projects";
-      const mode = ["trending", "popular", "recent"].includes(Cast.toString(args.MODE)) ? Cast.toString(args.MODE) : "trending";
-      return this.json(`/search/${type}?q=${encode(args.QUERY)}&mode=${mode}&limit=${limit(args.LIMIT)}&offset=${offset(args.OFFSET)}`);
-    }
-
-    explore(args) {
-      const type = Cast.toString(args.TYPE) === "studios" ? "studios" : "projects";
-      const mode = ["trending", "popular", "recent"].includes(Cast.toString(args.MODE)) ? Cast.toString(args.MODE) : "trending";
-      return this.json(`/explore/${type}?mode=${mode}&q=*&limit=${limit(args.LIMIT)}&offset=${offset(args.OFFSET)}`);
     }
 
     feed(args) {
