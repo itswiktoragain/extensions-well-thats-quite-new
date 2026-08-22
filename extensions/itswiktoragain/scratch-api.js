@@ -14,9 +14,7 @@
   const { ArgumentType, BlockType, Cast } = Scratch;
   const API = "https://api.scratch.mit.edu";
   const PROXY = "https://hxngklilobfnmdlhewbn.supabase.co/functions/v1/scratch-api-proxy";
-
-  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="26" fill="#ffbb52"/><g fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"><ellipse cx="26" cy="14" rx="11" ry="5"/><path d="M15 14v8c0 3 5 5 11 5s11-2 11-5v-8M15 22v8c0 3 5 5 11 5s11-2 11-5v-8M15 30v7c0 3 5 5 11 5s11-2 11-5v-7"/></g></svg>`;
-  const iconURI = `data:image/svg+xml,${encodeURIComponent(iconSvg)}`;
+  const iconURL = "https://itswiktoragain.github.io/extensions-well-thats-quite-new/itswiktoragain/scratch-api-icon.svg";
 
   const encode = (value) => encodeURIComponent(Cast.toString(value));
   const limit = (value) => Math.max(1, Math.min(40, Math.floor(Cast.toNumber(value) || 1)));
@@ -60,8 +58,8 @@
         color1: "#ffbb52",
         color2: "#e6a03f",
         color3: "#cc8730",
-        menuIconURI: iconURI,
-        blockIconURI: iconURI,
+        menuIconURI: iconURL,
+        blockIconURI: iconURL,
         blocks: [
           { blockType: BlockType.LABEL, text: Scratch.translate("Users") },
           {
