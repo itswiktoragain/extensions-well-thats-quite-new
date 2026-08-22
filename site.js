@@ -1,7 +1,22 @@
-const REPO = "itswiktoragain/extensions-well-thats-quite-new";
-const BRANCH = "master";
-const RAW_ROOT = `https://raw.githubusercontent.com/${REPO}/${BRANCH}`;
-const GITHUB_ROOT = `https://github.com/${REPO}/blob/${BRANCH}`;
+const SOURCES = {
+  custom: {
+    id: "custom",
+    label: "Well That's Quite New",
+    repo: "itswiktoragain/extensions-well-thats-quite-new",
+    branch: "master"
+  },
+  official: {
+    id: "official",
+    label: "Official TurboWarp",
+    repo: "TurboWarp/extensions",
+    branch: "master"
+  }
+};
+
+for (const source of Object.values(SOURCES)) {
+  source.rawRoot = `https://raw.githubusercontent.com/${source.repo}/${source.branch}`;
+  source.githubRoot = `https://github.com/${source.repo}/blob/${source.branch}`;
+}
 
 const grid = document.getElementById("extensionGrid");
 const statusEl = document.getElementById("status");
@@ -10,8 +25,12 @@ const loadedCount = document.getElementById("loadedCount");
 const searchInput = document.getElementById("searchInput");
 const emptyState = document.getElementById("emptyState");
 const template = document.getElementById("extensionCardTemplate");
+const sourceTabs = [...document.querySelectorAll(".source-tab")];
 
+let activeSourceId = "custom";
 let allExtensions = [];
+let loadGeneration = 0;
+const sourceCache = new Map();
 
 function stripJsonComments(text) {
   let result = "";
@@ -95,16 +114,17 @@ function metadataValue(meta, key, fallback = "Not specified") {
   return meta[key] || fallback;
 }
 
-function bannerImageUrls(path) {
+function bannerImageUrls(path, source) {
   const parts = path.split("/");
   const filename = parts.pop();
   const dir = parts.join("/");
   const names = [filename, filename.toLowerCase()];
   const extensions = ["svg", "png", "webp", "jpg", "jpeg"];
   const urls = [];
+
   for (const name of names) {
     for (const ext of extensions) {
-      urls.push(`${RAW_ROOT}/images/${dir ? `${dir}/` : ""}${name}.${ext}`);
+      urls.push(`${source.rawRoot}/images/${dir ? `${dir}/` : ""}${name}.${ext}`);
     }
   }
   return [...new Set(urls)];
@@ -116,6 +136,7 @@ function loadFirstWorkingImage(img, wrap, urls, index = 0, onLoad = null, useCor
     img.removeAttribute("src");
     return;
   }
+
   if (useCors) img.crossOrigin = "anonymous";
   img.onload = () => {
     wrap.classList.remove("fallback");
@@ -150,8 +171,7 @@ function applyProminentBottomBannerColor(img, article) {
     context.drawImage(img, 0, 0, canvas.width, canvas.height);
 
     const bottomStart = Math.floor(canvas.height * 0.75);
-    const sampleHeight = canvas.height - bottomStart;
-    const pixels = context.getImageData(0, bottomStart, canvas.width, sampleHeight).data;
+    const pixels = context.getImageData(0, bottomStart, canvas.width, canvas.height - bottomStart).data;
     const buckets = new Map();
 
     for (let i = 0; i < pixels.length; i += 4) {
@@ -230,7 +250,6 @@ function cropTransparentIcon(img, wrap) {
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    context.clearRect(0, 0, width, height);
     context.drawImage(img, 0, 0, width, height);
 
     const pixels = context.getImageData(0, 0, width, height).data;
@@ -283,6 +302,7 @@ function cropTransparentIcon(img, wrap) {
 
 function renderCreatorLinks(container, raw) {
   container.replaceChildren();
+
   if (!raw || raw === "Not specified") {
     container.textContent = raw || "Not specified";
     return;
@@ -291,6 +311,7 @@ function renderCreatorLinks(container, raw) {
   const chunks = raw.split(/(,\s*|;\s*|\s+and\s+)/i);
   for (const chunk of chunks) {
     if (!chunk) continue;
+
     if (/^(,\s*|;\s*|\s+and\s+)$/i.test(chunk)) {
       container.append(document.createTextNode(chunk));
       continue;
@@ -304,6 +325,7 @@ function renderCreatorLinks(container, raw) {
 
     const name = match[1].trim() || match[2].trim();
     const href = match[2].trim();
+
     try {
       const url = new URL(href);
       if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("Unsupported protocol");
@@ -339,7 +361,7 @@ function buildCard(ext) {
   loadFirstWorkingImage(
     bannerImg,
     bannerWrap,
-    bannerImageUrls(ext.path),
+    bannerImageUrls(ext.path, ext.source),
     0,
     (img) => applyProminentBottomBannerColor(img, article),
     true
@@ -348,6 +370,7 @@ function buildCard(ext) {
   const iconImg = fragment.querySelector(".extension-icon");
   const iconWrap = fragment.querySelector(".extension-icon-wrap");
   iconImg.alt = ext.name ? `${ext.name} icon` : "Extension icon";
+
   if (ext.icon) {
     iconImg.onload = () => cropTransparentIcon(iconImg, iconWrap);
     iconImg.onerror = () => iconWrap.classList.add("fallback");
@@ -363,8 +386,8 @@ function buildCard(ext) {
   renderCreatorLinks(fragment.querySelector(".meta-by"), ext.by);
   fragment.querySelector(".meta-license").textContent = ext.license;
 
-  fragment.querySelector(".source-link").href = `${GITHUB_ROOT}/extensions/${ext.path}.js`;
-  fragment.querySelector(".raw-link").href = `${RAW_ROOT}/extensions/${ext.path}.js`;
+  fragment.querySelector(".source-link").href = `${ext.source.githubRoot}/extensions/${ext.path}.js`;
+  fragment.querySelector(".raw-link").href = `${ext.source.rawRoot}/extensions/${ext.path}.js`;
 
   const standardKeys = new Set(["Name", "ID", "Description", "By", "License"]);
   const extras = Object.entries(ext.meta).filter(([key, value]) => !standardKeys.has(key) && value);
@@ -375,60 +398,183 @@ function buildCard(ext) {
     for (const [key, value] of extras) dl.append(makeMetaRow(key, value));
   }
 
-  article.dataset.search = ext.search;
   return fragment;
 }
 
 function render(filter = "") {
   const query = filter.trim().toLowerCase();
   grid.replaceChildren();
+
   const matches = allExtensions.filter((ext) => !query || ext.search.includes(query));
   for (const ext of matches) grid.append(buildCard(ext));
+
   emptyState.hidden = matches.length !== 0;
-  statusEl.textContent = `${matches.length} of ${allExtensions.length} extensions shown`;
+  const source = SOURCES[activeSourceId];
+  statusEl.textContent = `${matches.length} of ${allExtensions.length} extensions shown · ${source.label}`;
 }
 
-async function loadExtension(path) {
-  const response = await fetch(`${RAW_ROOT}/extensions/${path}.js`);
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-  const source = await response.text();
-  const meta = parseHeaderMetadata(source);
+function makeFallbackExtension(path, source, error = null) {
   const fallbackName = path.split("/").pop().replace(/[-_]/g, " ");
+  const description = error
+    ? "Metadata could not be loaded, but this extension is listed in the selected gallery."
+    : "No description provided.";
+
   const ext = {
     path,
-    meta,
-    icon: extractExtensionIcon(source),
-    name: metadataValue(meta, "Name", fallbackName),
-    id: metadataValue(meta, "ID"),
-    description: metadataValue(meta, "Description", "No description provided."),
-    by: metadataValue(meta, "By"),
-    license: metadataValue(meta, "License")
+    source,
+    meta: {},
+    icon: null,
+    name: fallbackName,
+    id: "Not specified",
+    description,
+    by: "Not specified",
+    license: "Not specified"
   };
-  ext.search = [ext.name, ext.path, ext.id, ext.description, ext.by, ext.license, ...Object.entries(meta).flat()].join(" ").toLowerCase();
+  ext.search = [ext.name, ext.path, ext.id, ext.description, ext.by, ext.license].join(" ").toLowerCase();
   return ext;
 }
 
-async function main() {
+async function loadExtension(path, source) {
   try {
-    const listResponse = await fetch(`${RAW_ROOT}/extensions/extensions.json`);
-    if (!listResponse.ok) throw new Error(`Could not load extension list (${listResponse.status})`);
-    const paths = parseExtensionList(await listResponse.text());
-    totalCount.textContent = paths.length;
+    const response = await fetch(`${source.rawRoot}/extensions/${path}.js`);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
 
-    const settled = await Promise.allSettled(paths.map(loadExtension));
-    allExtensions = settled.filter((result) => result.status === "fulfilled").map((result) => result.value);
-    loadedCount.textContent = allExtensions.length;
-    render();
+    const sourceCode = await response.text();
+    const meta = parseHeaderMetadata(sourceCode);
+    const fallbackName = path.split("/").pop().replace(/[-_]/g, " ");
 
-    const failed = settled.length - allExtensions.length;
-    if (failed) statusEl.textContent += ` · ${failed} file${failed === 1 ? "" : "s"} could not be read`;
+    const ext = {
+      path,
+      source,
+      meta,
+      icon: extractExtensionIcon(sourceCode),
+      name: metadataValue(meta, "Name", fallbackName),
+      id: metadataValue(meta, "ID"),
+      description: metadataValue(meta, "Description", "No description provided."),
+      by: metadataValue(meta, "By"),
+      license: metadataValue(meta, "License")
+    };
+
+    ext.search = [
+      ext.name,
+      ext.path,
+      ext.id,
+      ext.description,
+      ext.by,
+      ext.license,
+      ...Object.entries(meta).flat()
+    ].join(" ").toLowerCase();
+
+    return ext;
   } catch (error) {
-    console.error(error);
-    statusEl.textContent = `Could not load the extension gallery: ${error.message}`;
-    totalCount.textContent = "—";
-    loadedCount.textContent = "—";
+    console.debug(`Could not load ${source.repo}/extensions/${path}.js`, error);
+    return makeFallbackExtension(path, source, error);
   }
 }
 
+async function mapWithConcurrency(items, limit, worker, onProgress) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  let completed = 0;
+
+  async function runWorker() {
+    while (true) {
+      const index = nextIndex++;
+      if (index >= items.length) return;
+      results[index] = await worker(items[index], index);
+      completed++;
+      if (onProgress) onProgress(completed, items.length);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, runWorker));
+  return results;
+}
+
+function updateTabs() {
+  for (const tab of sourceTabs) {
+    const selected = tab.dataset.source === activeSourceId;
+    tab.classList.toggle("active", selected);
+    tab.setAttribute("aria-selected", selected ? "true" : "false");
+    tab.tabIndex = selected ? 0 : -1;
+  }
+}
+
+async function loadSource(sourceId) {
+  const source = SOURCES[sourceId];
+  if (!source) return;
+
+  activeSourceId = sourceId;
+  const generation = ++loadGeneration;
+  updateTabs();
+
+  grid.replaceChildren();
+  emptyState.hidden = true;
+  totalCount.textContent = "—";
+  loadedCount.textContent = "—";
+  statusEl.textContent = `Loading ${source.label}…`;
+
+  const cached = sourceCache.get(sourceId);
+  if (cached) {
+    if (generation !== loadGeneration) return;
+    allExtensions = cached.extensions;
+    totalCount.textContent = cached.total;
+    loadedCount.textContent = cached.extensions.length;
+    render(searchInput.value);
+    return;
+  }
+
+  try {
+    const listResponse = await fetch(`${source.rawRoot}/extensions/extensions.json`);
+    if (!listResponse.ok) throw new Error(`Could not load extension list (${listResponse.status})`);
+
+    const paths = parseExtensionList(await listResponse.text());
+    if (generation !== loadGeneration) return;
+
+    totalCount.textContent = paths.length;
+    loadedCount.textContent = "0";
+
+    const extensions = await mapWithConcurrency(
+      paths,
+      10,
+      (path) => loadExtension(path, source),
+      (completed, total) => {
+        if (generation !== loadGeneration) return;
+        loadedCount.textContent = completed;
+        statusEl.textContent = `Loading ${source.label} metadata… ${completed}/${total}`;
+      }
+    );
+
+    if (generation !== loadGeneration) return;
+
+    sourceCache.set(sourceId, { extensions, total: paths.length });
+    allExtensions = extensions;
+    loadedCount.textContent = extensions.length;
+    render(searchInput.value);
+  } catch (error) {
+    if (generation !== loadGeneration) return;
+    console.error(error);
+    allExtensions = [];
+    grid.replaceChildren();
+    emptyState.hidden = false;
+    totalCount.textContent = "—";
+    loadedCount.textContent = "—";
+    statusEl.textContent = `Could not load ${source.label}: ${error.message}`;
+  }
+}
+
+for (const tab of sourceTabs) {
+  tab.addEventListener("click", () => loadSource(tab.dataset.source));
+  tab.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const index = sourceTabs.indexOf(tab);
+    const direction = event.key === "ArrowRight" ? 1 : -1;
+    const next = sourceTabs[(index + direction + sourceTabs.length) % sourceTabs.length];
+    next.focus();
+    loadSource(next.dataset.source);
+  });
+}
+
 searchInput.addEventListener("input", () => render(searchInput.value));
-main();
+loadSource("custom");
