@@ -1,7 +1,7 @@
 // Name: Scratch API
 // ID: itswiktoragainscratchapi
 // Description: Get public user, project, studio, news, featured, and other data from the official Scratch API.
-// By: itswiktoragain
+// By: Wind-Z <https://scratch.mit.edu/users/wind-z/>
 // License: MPL-2.0
 /* eslint-disable extension/use-scratch-fetch */
 (function (Scratch) {
