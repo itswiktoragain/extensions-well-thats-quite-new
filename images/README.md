@@ -109,8 +109,9 @@ All images in this folder are licensed under the [GNU General Public License ver
  - Based on an image by [@SIPC](https://github.com/SIPC) in https://github.com/TurboWarp/extensions/issues/90#issuecomment-1431207669
 
 ## -SIPC-/time.svg
- - Created by [@SharkPool](https://scratch.mit.edu/users/DemonX5/)
- - Based on an image by [@SIPC](https://github.com/SIPC) in https://github.com/TurboWarp/extensions/issues/90#issuecomment-1431207669.
+ - Created by [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/)
+ - Based on an image by [@SharkPool](https://scratch.mit.edu/users/DemonX5/)
+ - Based on an image by [@SIPC](https://github.com/SIPC) in https://github.com/TurboWarp/extensions/issues/90#issuecomment-1431207669
 
 ## Skyhigh173/json.svg
  - Based on work by [@xTvii] in https://github.com/TurboWarp/extensions/issues/1079#issue-1926845796.
