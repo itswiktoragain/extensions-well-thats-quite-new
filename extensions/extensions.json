@@ -94,6 +94,8 @@
   "godslayerakp/http",
   "godslayerakp/ws",
   "itswiktoragain/scratch-api",
+  "itswiktoragain/openai-api",
+  "itswiktoragain/gemini-api",
   "itswindz/webserial",
   "itswindz/gyroaccel",
   "CubesterYT/Webhooks",
