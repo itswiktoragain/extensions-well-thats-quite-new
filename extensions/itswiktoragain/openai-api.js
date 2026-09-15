@@ -44,7 +44,7 @@
   class OpenAIAPI {
     constructor() {
       this.apiKey = "";
-      this.model = "gpt-4.1-mini";
+      this.model = "";
       this.lastResponse = null;
       this.lastStatus = 0;
       this.lastError = "";
@@ -88,7 +88,7 @@
             arguments: {
               MODEL: {
                 type: ArgumentType.STRING,
-                menu: "models",
+                defaultValue: "",
               },
             },
           },
@@ -140,7 +140,7 @@
               },
               MODEL: {
                 type: ArgumentType.STRING,
-                menu: "models",
+                defaultValue: "",
               },
             },
             disableMonitor: true,
@@ -169,12 +169,6 @@
             text: Scratch.translate("last OpenAI request succeeded?"),
           },
         ],
-        menus: {
-          models: {
-            acceptReporters: true,
-            items: ["gpt-4.1-mini", "gpt-4.1", "gpt-4o-mini"],
-          },
-        },
       };
     }
 
@@ -225,6 +219,11 @@
       const prompt = Cast.toString(promptValue);
       const instructions = Cast.toString(instructionsValue);
       const model = Cast.toString(modelValue).trim() || this.model;
+
+      if (!model) {
+        this.lastError = Scratch.translate("Set a OpenAI model first.");
+        return "";
+      }
       const body = {
         model,
         input: prompt,

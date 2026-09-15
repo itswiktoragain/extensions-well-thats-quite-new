@@ -51,7 +51,7 @@
   class GeminiAPI {
     constructor() {
       this.apiKey = "";
-      this.model = "gemini-2.5-flash";
+      this.model = "";
       this.lastResponse = null;
       this.lastStatus = 0;
       this.lastError = "";
@@ -95,7 +95,7 @@
             arguments: {
               MODEL: {
                 type: ArgumentType.STRING,
-                menu: "models",
+                defaultValue: "",
               },
             },
           },
@@ -147,7 +147,7 @@
               },
               MODEL: {
                 type: ArgumentType.STRING,
-                menu: "models",
+                defaultValue: "",
               },
             },
             disableMonitor: true,
@@ -176,12 +176,6 @@
             text: Scratch.translate("last Gemini request succeeded?"),
           },
         ],
-        menus: {
-          models: {
-            acceptReporters: true,
-            items: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
-          },
-        },
       };
     }
 
@@ -232,6 +226,11 @@
       const prompt = Cast.toString(promptValue);
       const instructions = Cast.toString(instructionsValue);
       const model = Cast.toString(modelValue).trim() || this.model;
+
+      if (!model) {
+        this.lastError = Scratch.translate("Set a Gemini model first.");
+        return "";
+      }
       const body = {
         contents: [
           {
