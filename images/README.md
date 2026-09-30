@@ -330,3 +330,30 @@ All images in this folder are licensed under the [GNU General Public License ver
 ## NishiOwO/dectalk.png
  - Created by [@Dogo6647](https://github.com/Dogo6647)
  - Used Arimo from Google Fonts.
+
+## itswiktoragain/url-tools.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/procedural-noise.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/seeded-random.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/csv.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/text-metrics.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/geometry.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/byte-buffer.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/text-similarity.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
+
+## itswiktoragain/grid-pathfinding.svg
+ - Created for [@itswiktoragain](https://scratch.mit.edu/users/Wind-Z/) with ChatGPT assistance.
