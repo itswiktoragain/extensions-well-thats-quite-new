@@ -105,18 +105,15 @@
           types: {
             acceptReporters: true,
             items: [
-              ["unsigned 8-bit", "u8"],
-              ["signed 8-bit", "i8"],
-              ["unsigned 16-bit", "u16"],
-              ["signed 16-bit", "i16"],
-              ["unsigned 32-bit", "u32"],
-              ["signed 32-bit", "i32"],
-              ["32-bit float", "f32"],
-              ["64-bit float", "f64"],
-            ].map(([text, value]) => ({
-              text: Scratch.translate(text),
-              value,
-            })),
+              { text: Scratch.translate("unsigned 8-bit"), value: "u8" },
+              { text: Scratch.translate("signed 8-bit"), value: "i8" },
+              { text: Scratch.translate("unsigned 16-bit"), value: "u16" },
+              { text: Scratch.translate("signed 16-bit"), value: "i16" },
+              { text: Scratch.translate("unsigned 32-bit"), value: "u32" },
+              { text: Scratch.translate("signed 32-bit"), value: "i32" },
+              { text: Scratch.translate("32-bit float"), value: "f32" },
+              { text: Scratch.translate("64-bit float"), value: "f64" },
+            ],
           },
           endian: {
             acceptReporters: true,
