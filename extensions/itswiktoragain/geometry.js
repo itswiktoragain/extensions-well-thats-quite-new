@@ -8,7 +8,6 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
   const radians = (degrees) => (degrees * Math.PI) / 180;
 
   const parsePolygon = (value) => {
@@ -27,7 +26,7 @@
     getInfo() {
       return {
         id: "itswiktoragaingeometry",
-        name: T("Geometry"),
+        name: Scratch.translate("Geometry"),
         color1: "#59c059",
         color2: "#459d45",
         color3: "#367f36",
@@ -35,7 +34,9 @@
           {
             opcode: "distance",
             blockType: BlockType.REPORTER,
-            text: T("distance from x [X1] y [Y1] to x [X2] y [Y2]"),
+            text: Scratch.translate(
+              "distance from x [X1] y [Y1] to x [X2] y [Y2]"
+            ),
             arguments: {
               X1: { type: ArgumentType.NUMBER, defaultValue: 0 },
               Y1: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -46,7 +47,9 @@
           {
             opcode: "angle",
             blockType: BlockType.REPORTER,
-            text: T("angle from x [X1] y [Y1] to x [X2] y [Y2]"),
+            text: Scratch.translate(
+              "angle from x [X1] y [Y1] to x [X2] y [Y2]"
+            ),
             arguments: {
               X1: { type: ArgumentType.NUMBER, defaultValue: 0 },
               Y1: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -57,7 +60,9 @@
           {
             opcode: "rotate",
             blockType: BlockType.REPORTER,
-            text: T("rotate point x [X] y [Y] around x [CX] y [CY] by [DEGREES] degrees"),
+            text: Scratch.translate(
+              "rotate point x [X] y [Y] around x [CX] y [CY] by [DEGREES] degrees"
+            ),
             arguments: {
               X: { type: ArgumentType.NUMBER, defaultValue: 100 },
               Y: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -69,7 +74,9 @@
           {
             opcode: "intersection",
             blockType: BlockType.REPORTER,
-            text: T("intersection of line [X1] [Y1] [X2] [Y2] and line [X3] [Y3] [X4] [Y4]"),
+            text: Scratch.translate(
+              "intersection of line [X1] [Y1] [X2] [Y2] and line [X3] [Y3] [X4] [Y4]"
+            ),
             arguments: {
               X1: { type: ArgumentType.NUMBER, defaultValue: 0 },
               Y1: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -84,19 +91,27 @@
           {
             opcode: "pointInPolygon",
             blockType: BlockType.BOOLEAN,
-            text: T("point x [X] y [Y] inside polygon [POLYGON]?"),
+            text: Scratch.translate(
+              "point x [X] y [Y] inside polygon [POLYGON]?"
+            ),
             arguments: {
               X: { type: ArgumentType.NUMBER, defaultValue: 50 },
               Y: { type: ArgumentType.NUMBER, defaultValue: 50 },
-              POLYGON: { type: ArgumentType.STRING, defaultValue: "[[0,0],[100,0],[100,100],[0,100]]" },
+              POLYGON: {
+                type: ArgumentType.STRING,
+                defaultValue: "[[0,0],[100,0],[100,100],[0,100]]",
+              },
             },
           },
           {
             opcode: "polygonArea",
             blockType: BlockType.REPORTER,
-            text: T("area of polygon [POLYGON]"),
+            text: Scratch.translate("area of polygon [POLYGON]"),
             arguments: {
-              POLYGON: { type: ArgumentType.STRING, defaultValue: "[[0,0],[100,0],[100,100],[0,100]]" },
+              POLYGON: {
+                type: ArgumentType.STRING,
+                defaultValue: "[[0,0],[100,0],[100,100],[0,100]]",
+              },
             },
           },
         ],
@@ -104,11 +119,21 @@
     }
 
     distance(args) {
-      return Math.hypot(Cast.toNumber(args.X2) - Cast.toNumber(args.X1), Cast.toNumber(args.Y2) - Cast.toNumber(args.Y1));
+      return Math.hypot(
+        Cast.toNumber(args.X2) - Cast.toNumber(args.X1),
+        Cast.toNumber(args.Y2) - Cast.toNumber(args.Y1)
+      );
     }
 
     angle(args) {
-      return (Math.atan2(Cast.toNumber(args.Y2) - Cast.toNumber(args.Y1), Cast.toNumber(args.X2) - Cast.toNumber(args.X1)) * 180) / Math.PI;
+      return (
+        (Math.atan2(
+          Cast.toNumber(args.Y2) - Cast.toNumber(args.Y1),
+          Cast.toNumber(args.X2) - Cast.toNumber(args.X1)
+        ) *
+          180) /
+        Math.PI
+      );
     }
 
     rotate(args) {
@@ -152,7 +177,8 @@
       for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
         const [xi, yi] = points[i];
         const [xj, yj] = points[j];
-        const intersects = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+        const intersects =
+          yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
         if (intersects) inside = !inside;
       }
       return inside;

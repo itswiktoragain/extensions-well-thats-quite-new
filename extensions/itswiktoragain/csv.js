@@ -8,7 +8,6 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
 
   const delimiterFrom = (value) => {
     const text = Cast.toString(value);
@@ -74,7 +73,7 @@
     getInfo() {
       return {
         id: "itswiktoragaincsv",
-        name: T("CSV"),
+        name: Scratch.translate("CSV"),
         color1: "#2bb9a9",
         color2: "#209889",
         color3: "#19796d",
@@ -82,68 +81,99 @@
           {
             opcode: "setDelimiter",
             blockType: BlockType.COMMAND,
-            text: T("set CSV delimiter to [DELIMITER]"),
-            arguments: { DELIMITER: { type: ArgumentType.STRING, defaultValue: "," } },
+            text: Scratch.translate("set CSV delimiter to [DELIMITER]"),
+            arguments: {
+              DELIMITER: { type: ArgumentType.STRING, defaultValue: "," },
+            },
           },
           {
             opcode: "rowCount",
             blockType: BlockType.REPORTER,
-            text: T("row count of CSV [CSV]"),
-            arguments: { CSV: { type: ArgumentType.STRING, defaultValue: "name,score\nAlex,10\nSam,20" } },
+            text: Scratch.translate("row count of CSV [CSV]"),
+            arguments: {
+              CSV: {
+                type: ArgumentType.STRING,
+                defaultValue: "name,score\nAlex,10\nSam,20",
+              },
+            },
           },
           {
             opcode: "columnCount",
             blockType: BlockType.REPORTER,
-            text: T("column count of row [ROW] in CSV [CSV]"),
+            text: Scratch.translate("column count of row [ROW] in CSV [CSV]"),
             arguments: {
               ROW: { type: ArgumentType.NUMBER, defaultValue: 1 },
-              CSV: { type: ArgumentType.STRING, defaultValue: "name,score\nAlex,10" },
+              CSV: {
+                type: ArgumentType.STRING,
+                defaultValue: "name,score\nAlex,10",
+              },
             },
           },
           {
             opcode: "cell",
             blockType: BlockType.REPORTER,
-            text: T("cell row [ROW] column [COLUMN] of CSV [CSV]"),
+            text: Scratch.translate(
+              "cell row [ROW] column [COLUMN] of CSV [CSV]"
+            ),
             arguments: {
               ROW: { type: ArgumentType.NUMBER, defaultValue: 2 },
               COLUMN: { type: ArgumentType.NUMBER, defaultValue: 1 },
-              CSV: { type: ArgumentType.STRING, defaultValue: "name,score\nAlex,10" },
+              CSV: {
+                type: ArgumentType.STRING,
+                defaultValue: "name,score\nAlex,10",
+              },
             },
           },
           {
             opcode: "rowJSON",
             blockType: BlockType.REPORTER,
-            text: T("row [ROW] of CSV [CSV] as JSON"),
+            text: Scratch.translate("row [ROW] of CSV [CSV] as JSON"),
             arguments: {
               ROW: { type: ArgumentType.NUMBER, defaultValue: 1 },
-              CSV: { type: ArgumentType.STRING, defaultValue: "name,score\nAlex,10" },
+              CSV: {
+                type: ArgumentType.STRING,
+                defaultValue: "name,score\nAlex,10",
+              },
             },
           },
           {
             opcode: "columnJSON",
             blockType: BlockType.REPORTER,
-            text: T("column [COLUMN] of CSV [CSV] as JSON"),
+            text: Scratch.translate("column [COLUMN] of CSV [CSV] as JSON"),
             arguments: {
               COLUMN: { type: ArgumentType.NUMBER, defaultValue: 1 },
-              CSV: { type: ArgumentType.STRING, defaultValue: "name,score\nAlex,10" },
+              CSV: {
+                type: ArgumentType.STRING,
+                defaultValue: "name,score\nAlex,10",
+              },
             },
           },
           {
             opcode: "toJSON",
             blockType: BlockType.REPORTER,
-            text: T("CSV [CSV] as JSON arrays"),
-            arguments: { CSV: { type: ArgumentType.STRING, defaultValue: "name,score\nAlex,10" } },
+            text: Scratch.translate("CSV [CSV] as JSON arrays"),
+            arguments: {
+              CSV: {
+                type: ArgumentType.STRING,
+                defaultValue: "name,score\nAlex,10",
+              },
+            },
           },
           {
             opcode: "fromJSON",
             blockType: BlockType.REPORTER,
-            text: T("JSON arrays [JSON] as CSV"),
-            arguments: { JSON: { type: ArgumentType.STRING, defaultValue: '[["name","score"],["Alex",10]]' } },
+            text: Scratch.translate("JSON arrays [JSON] as CSV"),
+            arguments: {
+              JSON: {
+                type: ArgumentType.STRING,
+                defaultValue: '[["name","score"],["Alex",10]]',
+              },
+            },
           },
           {
             opcode: "delimiterReporter",
             blockType: BlockType.REPORTER,
-            text: T("CSV delimiter"),
+            text: Scratch.translate("CSV delimiter"),
           },
         ],
       };
@@ -195,7 +225,11 @@
         const rows = JSON.parse(Cast.toString(args.JSON));
         if (!Array.isArray(rows)) return "";
         return rows
-          .map((row) => (Array.isArray(row) ? row : [row]).map((value) => encodeField(value, this.delimiter)).join(this.delimiter))
+          .map((row) =>
+            (Array.isArray(row) ? row : [row])
+              .map((value) => encodeField(value, this.delimiter))
+              .join(this.delimiter)
+          )
           .join("\n");
       } catch (error) {
         return "";

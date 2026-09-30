@@ -8,7 +8,6 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
 
   const typeInfo = {
     u8: [1, "setUint8", "getUint8"],
@@ -29,16 +28,20 @@
     getInfo() {
       return {
         id: "itswiktoragainbytebuffer",
-        name: T("Byte Buffer"),
+        name: Scratch.translate("Byte Buffer"),
         color1: "#4b6cb7",
         color2: "#3a5594",
         color3: "#2c4175",
         blocks: [
-          { opcode: "clear", blockType: BlockType.COMMAND, text: T("clear byte buffer") },
+          {
+            opcode: "clear",
+            blockType: BlockType.COMMAND,
+            text: Scratch.translate("clear byte buffer"),
+          },
           {
             opcode: "append",
             blockType: BlockType.COMMAND,
-            text: T("append [TYPE] [VALUE] as [ENDIAN]"),
+            text: Scratch.translate("append [TYPE] [VALUE] as [ENDIAN]"),
             arguments: {
               TYPE: { type: ArgumentType.STRING, menu: "types" },
               VALUE: { type: ArgumentType.NUMBER, defaultValue: 42 },
@@ -48,7 +51,7 @@
           {
             opcode: "read",
             blockType: BlockType.REPORTER,
-            text: T("read [TYPE] at byte [OFFSET] as [ENDIAN]"),
+            text: Scratch.translate("read [TYPE] at byte [OFFSET] as [ENDIAN]"),
             arguments: {
               TYPE: { type: ArgumentType.STRING, menu: "types" },
               OFFSET: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -58,24 +61,45 @@
           {
             opcode: "byteAt",
             blockType: BlockType.REPORTER,
-            text: T("byte [OFFSET]"),
-            arguments: { OFFSET: { type: ArgumentType.NUMBER, defaultValue: 0 } },
+            text: Scratch.translate("byte [OFFSET]"),
+            arguments: {
+              OFFSET: { type: ArgumentType.NUMBER, defaultValue: 0 },
+            },
           },
           {
             opcode: "loadHex",
             blockType: BlockType.COMMAND,
-            text: T("load hex [HEX] into byte buffer"),
-            arguments: { HEX: { type: ArgumentType.STRING, defaultValue: "48 65 6c 6c 6f" } },
+            text: Scratch.translate("load hex [HEX] into byte buffer"),
+            arguments: {
+              HEX: {
+                type: ArgumentType.STRING,
+                defaultValue: "48 65 6c 6c 6f",
+              },
+            },
           },
-          { opcode: "hex", blockType: BlockType.REPORTER, text: T("byte buffer as hex") },
-          { opcode: "base64", blockType: BlockType.REPORTER, text: T("byte buffer as base64") },
+          {
+            opcode: "hex",
+            blockType: BlockType.REPORTER,
+            text: Scratch.translate("byte buffer as hex"),
+          },
+          {
+            opcode: "base64",
+            blockType: BlockType.REPORTER,
+            text: Scratch.translate("byte buffer as base64"),
+          },
           {
             opcode: "loadBase64",
             blockType: BlockType.COMMAND,
-            text: T("load base64 [BASE64] into byte buffer"),
-            arguments: { BASE64: { type: ArgumentType.STRING, defaultValue: "SGVsbG8=" } },
+            text: Scratch.translate("load base64 [BASE64] into byte buffer"),
+            arguments: {
+              BASE64: { type: ArgumentType.STRING, defaultValue: "SGVsbG8=" },
+            },
           },
-          { opcode: "length", blockType: BlockType.REPORTER, text: T("byte buffer length") },
+          {
+            opcode: "length",
+            blockType: BlockType.REPORTER,
+            text: Scratch.translate("byte buffer length"),
+          },
         ],
         menus: {
           types: {
@@ -89,13 +113,16 @@
               ["signed 32-bit", "i32"],
               ["32-bit float", "f32"],
               ["64-bit float", "f64"],
-            ].map(([text, value]) => ({ text: T(text), value })),
+            ].map(([text, value]) => ({
+              text: Scratch.translate(text),
+              value,
+            })),
           },
           endian: {
             acceptReporters: true,
             items: [
-              { text: T("little endian"), value: "little" },
-              { text: T("big endian"), value: "big" },
+              { text: Scratch.translate("little endian"), value: "little" },
+              { text: Scratch.translate("big endian"), value: "big" },
             ],
           },
         },
@@ -126,7 +153,9 @@
       const [size, , getter] = this._info(args.TYPE);
       const offset = Math.max(0, Math.floor(Cast.toNumber(args.OFFSET)));
       if (offset + size > this.bytes.length) return 0;
-      const buffer = Uint8Array.from(this.bytes.slice(offset, offset + size)).buffer;
+      const buffer = Uint8Array.from(
+        this.bytes.slice(offset, offset + size)
+      ).buffer;
       return new DataView(buffer)[getter](0, this._little(args.ENDIAN));
     }
 
@@ -139,12 +168,15 @@
       const compact = Cast.toString(args.HEX).replace(/[^0-9a-fA-F]/g, "");
       const even = compact.length % 2 ? `0${compact}` : compact;
       const bytes = [];
-      for (let i = 0; i < even.length; i += 2) bytes.push(parseInt(even.slice(i, i + 2), 16));
+      for (let i = 0; i < even.length; i += 2)
+        bytes.push(parseInt(even.slice(i, i + 2), 16));
       this.bytes = bytes;
     }
 
     hex() {
-      return this.bytes.map((byte) => byte.toString(16).padStart(2, "0")).join(" ");
+      return this.bytes
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join(" ");
     }
 
     base64() {

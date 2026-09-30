@@ -8,7 +8,6 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
   const LIMIT = 4096;
 
   const clipped = (value) => Array.from(Cast.toString(value)).slice(0, LIMIT);
@@ -23,20 +22,29 @@
       current[0] = y;
       for (let x = 1; x <= a.length; x++) {
         const cost = a[x - 1] === b[y - 1] ? 0 : 1;
-        current[x] = Math.min(current[x - 1] + 1, previous[x] + 1, previous[x - 1] + cost);
+        current[x] = Math.min(
+          current[x - 1] + 1,
+          previous[x] + 1,
+          previous[x - 1] + cost
+        );
       }
       [previous, current] = [current, previous];
     }
     return previous[a.length];
   };
 
-  const wordSet = (value) => new Set(Cast.toString(value).toLowerCase().match(/[\p{L}\p{N}_]+/gu) || []);
+  const wordSet = (value) =>
+    new Set(
+      Cast.toString(value)
+        .toLowerCase()
+        .match(/[\p{L}\p{N}_]+/gu) || []
+    );
 
   class TextSimilarity {
     getInfo() {
       return {
         id: "itswiktoragaintextsimilarity",
-        name: T("Text Similarity"),
+        name: Scratch.translate("Text Similarity"),
         color1: "#e95f5f",
         color2: "#c94747",
         color3: "#a53939",
@@ -44,7 +52,7 @@
           {
             opcode: "distance",
             blockType: BlockType.REPORTER,
-            text: T("edit distance between [A] and [B]"),
+            text: Scratch.translate("edit distance between [A] and [B]"),
             arguments: {
               A: { type: ArgumentType.STRING, defaultValue: "kitten" },
               B: { type: ArgumentType.STRING, defaultValue: "sitting" },
@@ -53,7 +61,7 @@
           {
             opcode: "similarity",
             blockType: BlockType.REPORTER,
-            text: T("similarity percent of [A] and [B]"),
+            text: Scratch.translate("similarity percent of [A] and [B]"),
             arguments: {
               A: { type: ArgumentType.STRING, defaultValue: "hello" },
               B: { type: ArgumentType.STRING, defaultValue: "hallo" },
@@ -62,7 +70,7 @@
           {
             opcode: "commonPrefix",
             blockType: BlockType.REPORTER,
-            text: T("common prefix of [A] and [B]"),
+            text: Scratch.translate("common prefix of [A] and [B]"),
             arguments: {
               A: { type: ArgumentType.STRING, defaultValue: "scratch" },
               B: { type: ArgumentType.STRING, defaultValue: "scrape" },
@@ -71,7 +79,7 @@
           {
             opcode: "commonSuffix",
             blockType: BlockType.REPORTER,
-            text: T("common suffix of [A] and [B]"),
+            text: Scratch.translate("common suffix of [A] and [B]"),
             arguments: {
               A: { type: ArgumentType.STRING, defaultValue: "walking" },
               B: { type: ArgumentType.STRING, defaultValue: "talking" },
@@ -80,9 +88,12 @@
           {
             opcode: "wordOverlap",
             blockType: BlockType.REPORTER,
-            text: T("word overlap percent of [A] and [B]"),
+            text: Scratch.translate("word overlap percent of [A] and [B]"),
             arguments: {
-              A: { type: ArgumentType.STRING, defaultValue: "the quick brown fox" },
+              A: {
+                type: ArgumentType.STRING,
+                defaultValue: "the quick brown fox",
+              },
               B: { type: ArgumentType.STRING, defaultValue: "the brown dog" },
             },
           },
@@ -114,7 +125,12 @@
       const a = Array.from(Cast.toString(args.A));
       const b = Array.from(Cast.toString(args.B));
       let i = 0;
-      while (i < a.length && i < b.length && a[a.length - 1 - i] === b[b.length - 1 - i]) i++;
+      while (
+        i < a.length &&
+        i < b.length &&
+        a[a.length - 1 - i] === b[b.length - 1 - i]
+      )
+        i++;
       return a.slice(a.length - i).join("");
     }
 

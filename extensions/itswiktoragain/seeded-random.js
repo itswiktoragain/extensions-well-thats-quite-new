@@ -8,7 +8,6 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
 
   const hashSeed = (text) => {
     let h = 1779033703 ^ Cast.toString(text).length;
@@ -30,7 +29,7 @@
     getInfo() {
       return {
         id: "itswiktoragainseededrandom",
-        name: T("Seeded Random"),
+        name: Scratch.translate("Seeded Random"),
         color1: "#ff8c42",
         color2: "#dd6f29",
         color3: "#bb581c",
@@ -38,13 +37,15 @@
           {
             opcode: "setSeed",
             blockType: BlockType.COMMAND,
-            text: T("set random seed [SEED]"),
-            arguments: { SEED: { type: ArgumentType.STRING, defaultValue: "scratch" } },
+            text: Scratch.translate("set random seed [SEED]"),
+            arguments: {
+              SEED: { type: ArgumentType.STRING, defaultValue: "scratch" },
+            },
           },
           {
             opcode: "random",
             blockType: BlockType.REPORTER,
-            text: T("seeded random [MIN] to [MAX]"),
+            text: Scratch.translate("seeded random [MIN] to [MAX]"),
             arguments: {
               MIN: { type: ArgumentType.NUMBER, defaultValue: 0 },
               MAX: { type: ArgumentType.NUMBER, defaultValue: 1 },
@@ -53,7 +54,7 @@
           {
             opcode: "randomInt",
             blockType: BlockType.REPORTER,
-            text: T("seeded random integer [MIN] to [MAX]"),
+            text: Scratch.translate("seeded random integer [MIN] to [MAX]"),
             arguments: {
               MIN: { type: ArgumentType.NUMBER, defaultValue: 1 },
               MAX: { type: ArgumentType.NUMBER, defaultValue: 10 },
@@ -62,31 +63,43 @@
           {
             opcode: "chance",
             blockType: BlockType.BOOLEAN,
-            text: T("seeded chance [PERCENT] %?"),
-            arguments: { PERCENT: { type: ArgumentType.NUMBER, defaultValue: 50 } },
+            text: Scratch.translate("seeded chance [PERCENT] %?"),
+            arguments: {
+              PERCENT: { type: ArgumentType.NUMBER, defaultValue: 50 },
+            },
           },
           {
             opcode: "choose",
             blockType: BlockType.REPORTER,
-            text: T("seeded item from [TEXT] split by [SEPARATOR]"),
+            text: Scratch.translate(
+              "seeded item from [TEXT] split by [SEPARATOR]"
+            ),
             arguments: {
-              TEXT: { type: ArgumentType.STRING, defaultValue: "red,green,blue" },
+              TEXT: {
+                type: ArgumentType.STRING,
+                defaultValue: "red,green,blue",
+              },
               SEPARATOR: { type: ArgumentType.STRING, defaultValue: "," },
             },
           },
           {
             opcode: "shuffle",
             blockType: BlockType.REPORTER,
-            text: T("seeded shuffle [TEXT] split by [SEPARATOR]"),
+            text: Scratch.translate(
+              "seeded shuffle [TEXT] split by [SEPARATOR]"
+            ),
             arguments: {
-              TEXT: { type: ArgumentType.STRING, defaultValue: "one,two,three,four" },
+              TEXT: {
+                type: ArgumentType.STRING,
+                defaultValue: "one,two,three,four",
+              },
               SEPARATOR: { type: ArgumentType.STRING, defaultValue: "," },
             },
           },
           {
             opcode: "seedReporter",
             blockType: BlockType.REPORTER,
-            text: T("random seed"),
+            text: Scratch.translate("random seed"),
           },
         ],
       };

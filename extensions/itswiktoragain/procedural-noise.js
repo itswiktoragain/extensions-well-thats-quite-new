@@ -8,7 +8,6 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
 
   const hashString = (text) => {
     let hash = 2166136261 >>> 0;
@@ -32,7 +31,7 @@
     getInfo() {
       return {
         id: "itswiktoragainproceduralnoise",
-        name: T("Procedural Noise"),
+        name: Scratch.translate("Procedural Noise"),
         color1: "#7e57c2",
         color2: "#6744a6",
         color3: "#56378d",
@@ -40,19 +39,21 @@
           {
             opcode: "setSeed",
             blockType: BlockType.COMMAND,
-            text: T("set noise seed [SEED]"),
-            arguments: { SEED: { type: ArgumentType.STRING, defaultValue: "scratch" } },
+            text: Scratch.translate("set noise seed [SEED]"),
+            arguments: {
+              SEED: { type: ArgumentType.STRING, defaultValue: "scratch" },
+            },
           },
           {
             opcode: "noise1D",
             blockType: BlockType.REPORTER,
-            text: T("noise at x [X]"),
+            text: Scratch.translate("noise at x [X]"),
             arguments: { X: { type: ArgumentType.NUMBER, defaultValue: 12.5 } },
           },
           {
             opcode: "noise2D",
             blockType: BlockType.REPORTER,
-            text: T("noise at x [X] y [Y]"),
+            text: Scratch.translate("noise at x [X] y [Y]"),
             arguments: {
               X: { type: ArgumentType.NUMBER, defaultValue: 12.5 },
               Y: { type: ArgumentType.NUMBER, defaultValue: 8.25 },
@@ -61,7 +62,9 @@
           {
             opcode: "fractal",
             blockType: BlockType.REPORTER,
-            text: T("fractal noise x [X] y [Y] octaves [OCTAVES] persistence [PERSISTENCE]"),
+            text: Scratch.translate(
+              "fractal noise x [X] y [Y] octaves [OCTAVES] persistence [PERSISTENCE]"
+            ),
             arguments: {
               X: { type: ArgumentType.NUMBER, defaultValue: 12.5 },
               Y: { type: ArgumentType.NUMBER, defaultValue: 8.25 },
@@ -72,7 +75,9 @@
           {
             opcode: "mapped",
             blockType: BlockType.REPORTER,
-            text: T("noise x [X] y [Y] mapped from [MIN] to [MAX]"),
+            text: Scratch.translate(
+              "noise x [X] y [Y] mapped from [MIN] to [MAX]"
+            ),
             arguments: {
               X: { type: ArgumentType.NUMBER, defaultValue: 12.5 },
               Y: { type: ArgumentType.NUMBER, defaultValue: 8.25 },
@@ -83,7 +88,7 @@
           {
             opcode: "seedReporter",
             blockType: BlockType.REPORTER,
-            text: T("noise seed"),
+            text: Scratch.translate("noise seed"),
           },
         ],
       };
@@ -95,7 +100,10 @@
     }
 
     _value(ix, iy) {
-      let h = this.seed ^ Math.imul(ix | 0, 0x27d4eb2d) ^ Math.imul(iy | 0, 0x165667b1);
+      let h =
+        this.seed ^
+        Math.imul(ix | 0, 0x27d4eb2d) ^
+        Math.imul(iy | 0, 0x165667b1);
       h ^= h >>> 15;
       h = Math.imul(h, 0x85ebca6b);
       h ^= h >>> 13;
@@ -125,8 +133,14 @@
     fractal(args) {
       const x = Cast.toNumber(args.X);
       const y = Cast.toNumber(args.Y);
-      const octaves = Math.max(1, Math.min(12, Math.floor(Cast.toNumber(args.OCTAVES))));
-      const persistence = Math.max(0, Math.min(1, Cast.toNumber(args.PERSISTENCE)));
+      const octaves = Math.max(
+        1,
+        Math.min(12, Math.floor(Cast.toNumber(args.OCTAVES)))
+      );
+      const persistence = Math.max(
+        0,
+        Math.min(1, Cast.toNumber(args.PERSISTENCE))
+      );
       let amplitude = 1;
       let frequency = 1;
       let total = 0;

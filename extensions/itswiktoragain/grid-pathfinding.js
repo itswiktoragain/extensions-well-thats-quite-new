@@ -8,10 +8,10 @@
   "use strict";
 
   const { ArgumentType, BlockType, Cast } = Scratch;
-  const T = Scratch.translate;
   const MAX_SIDE = 200;
 
-  const clampInt = (value, min, max) => Math.max(min, Math.min(max, Math.floor(Cast.toNumber(value))));
+  const clampInt = (value, min, max) =>
+    Math.max(min, Math.min(max, Math.floor(Cast.toNumber(value))));
 
   const parseBlocked = (value) => {
     const text = Cast.toString(value).trim();
@@ -21,7 +21,11 @@
       const parsed = JSON.parse(text);
       if (Array.isArray(parsed)) {
         for (const point of parsed) {
-          if (Array.isArray(point) && point.length >= 2) out.push([Math.floor(Number(point[0])), Math.floor(Number(point[1]))]);
+          if (Array.isArray(point) && point.length >= 2)
+            out.push([
+              Math.floor(Number(point[0])),
+              Math.floor(Number(point[1])),
+            ]);
         }
         return out;
       }
@@ -29,7 +33,9 @@
       // Fall back to x,y;x,y syntax.
     }
     for (const pair of text.split(";")) {
-      const [x, y] = pair.split(",").map((item) => Math.floor(Number(item.trim())));
+      const [x, y] = pair
+        .split(",")
+        .map((item) => Math.floor(Number(item.trim())));
       if (Number.isFinite(x) && Number.isFinite(y)) out.push([x, y]);
     }
     return out;
@@ -45,7 +51,7 @@
     getInfo() {
       return {
         id: "itswiktoragaingridpathfinding",
-        name: T("Grid Pathfinding"),
+        name: Scratch.translate("Grid Pathfinding"),
         color1: "#34b4d9",
         color2: "#2794b5",
         color3: "#1e7691",
@@ -53,7 +59,9 @@
           {
             opcode: "path",
             blockType: BlockType.REPORTER,
-            text: T("path from [SX] [SY] to [EX] [EY] on [WIDTH] x [HEIGHT] grid blocked [BLOCKED] movement [MODE]"),
+            text: Scratch.translate(
+              "path from [SX] [SY] to [EX] [EY] on [WIDTH] x [HEIGHT] grid blocked [BLOCKED] movement [MODE]"
+            ),
             arguments: {
               SX: { type: ArgumentType.NUMBER, defaultValue: 0 },
               SY: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -61,14 +69,19 @@
               EY: { type: ArgumentType.NUMBER, defaultValue: 9 },
               WIDTH: { type: ArgumentType.NUMBER, defaultValue: 10 },
               HEIGHT: { type: ArgumentType.NUMBER, defaultValue: 10 },
-              BLOCKED: { type: ArgumentType.STRING, defaultValue: "3,3;3,4;3,5;4,5;5,5" },
+              BLOCKED: {
+                type: ArgumentType.STRING,
+                defaultValue: "3,3;3,4;3,5;4,5;5,5",
+              },
               MODE: { type: ArgumentType.STRING, menu: "modes" },
             },
           },
           {
             opcode: "length",
             blockType: BlockType.REPORTER,
-            text: T("path length from [SX] [SY] to [EX] [EY] on [WIDTH] x [HEIGHT] grid blocked [BLOCKED] movement [MODE]"),
+            text: Scratch.translate(
+              "path length from [SX] [SY] to [EX] [EY] on [WIDTH] x [HEIGHT] grid blocked [BLOCKED] movement [MODE]"
+            ),
             arguments: {
               SX: { type: ArgumentType.NUMBER, defaultValue: 0 },
               SY: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -76,14 +89,19 @@
               EY: { type: ArgumentType.NUMBER, defaultValue: 9 },
               WIDTH: { type: ArgumentType.NUMBER, defaultValue: 10 },
               HEIGHT: { type: ArgumentType.NUMBER, defaultValue: 10 },
-              BLOCKED: { type: ArgumentType.STRING, defaultValue: "3,3;3,4;3,5;4,5;5,5" },
+              BLOCKED: {
+                type: ArgumentType.STRING,
+                defaultValue: "3,3;3,4;3,5;4,5;5,5",
+              },
               MODE: { type: ArgumentType.STRING, menu: "modes" },
             },
           },
           {
             opcode: "exists",
             blockType: BlockType.BOOLEAN,
-            text: T("path exists from [SX] [SY] to [EX] [EY] on [WIDTH] x [HEIGHT] grid blocked [BLOCKED] movement [MODE]?"),
+            text: Scratch.translate(
+              "path exists from [SX] [SY] to [EX] [EY] on [WIDTH] x [HEIGHT] grid blocked [BLOCKED] movement [MODE]?"
+            ),
             arguments: {
               SX: { type: ArgumentType.NUMBER, defaultValue: 0 },
               SY: { type: ArgumentType.NUMBER, defaultValue: 0 },
@@ -91,18 +109,25 @@
               EY: { type: ArgumentType.NUMBER, defaultValue: 9 },
               WIDTH: { type: ArgumentType.NUMBER, defaultValue: 10 },
               HEIGHT: { type: ArgumentType.NUMBER, defaultValue: 10 },
-              BLOCKED: { type: ArgumentType.STRING, defaultValue: "3,3;3,4;3,5;4,5;5,5" },
+              BLOCKED: {
+                type: ArgumentType.STRING,
+                defaultValue: "3,3;3,4;3,5;4,5;5,5",
+              },
               MODE: { type: ArgumentType.STRING, menu: "modes" },
             },
           },
-          { opcode: "explored", blockType: BlockType.REPORTER, text: T("cells explored by last path") },
+          {
+            opcode: "explored",
+            blockType: BlockType.REPORTER,
+            text: Scratch.translate("cells explored by last path"),
+          },
         ],
         menus: {
           modes: {
             acceptReporters: true,
             items: [
-              { text: T("4 directions"), value: "4" },
-              { text: T("8 directions"), value: "8" },
+              { text: Scratch.translate("4 directions"), value: "4" },
+              { text: Scratch.translate("8 directions"), value: "8" },
             ],
           },
         },
@@ -118,12 +143,22 @@
       const ey = clampInt(args.EY, 0, height - 1);
       const mode = Cast.toString(args.MODE) === "8" ? "8" : "4";
       const blockedText = Cast.toString(args.BLOCKED);
-      const key = JSON.stringify([width, height, sx, sy, ex, ey, mode, blockedText]);
+      const key = JSON.stringify([
+        width,
+        height,
+        sx,
+        sy,
+        ex,
+        ey,
+        mode,
+        blockedText,
+      ]);
       if (key === this.lastKey) return this.lastResult;
 
       const blocked = new Uint8Array(width * height);
       for (const [x, y] of parseBlocked(blockedText)) {
-        if (x >= 0 && x < width && y >= 0 && y < height) blocked[y * width + x] = 1;
+        if (x >= 0 && x < width && y >= 0 && y < height)
+          blocked[y * width + x] = 1;
       }
       blocked[sy * width + sx] = 0;
       blocked[ey * width + ex] = 0;
@@ -140,9 +175,24 @@
       let head = 0;
       let tail = 1;
       let explored = 0;
-      const directions = mode === "8"
-        ? [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]
-        : [[1,0],[-1,0],[0,1],[0,-1]];
+      const directions =
+        mode === "8"
+          ? [
+              [1, 0],
+              [-1, 0],
+              [0, 1],
+              [0, -1],
+              [1, 1],
+              [1, -1],
+              [-1, 1],
+              [-1, -1],
+            ]
+          : [
+              [1, 0],
+              [-1, 0],
+              [0, 1],
+              [0, -1],
+            ];
 
       while (head < tail) {
         const current = queue[head++];
