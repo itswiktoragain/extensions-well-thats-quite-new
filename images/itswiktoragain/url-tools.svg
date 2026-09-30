@@ -1,8 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
-  <rect width="600" height="300" fill="#4c97ff"/>
-  <path d="M0 0h270L170 300H0z" fill="#69a9ff"/>
-  <path d="M600 0H390l70 300h140z" fill="#3373cc"/>
-  <path d="M235 65h130a50 50 0 0 1 0 100h-35" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
-  <path d="M365 235H235a50 50 0 0 1 0-100h35" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
-  <path d="M255 150h90" stroke="#fff" stroke-width="18" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5aa8ff"/>
+      <stop offset="1" stop-color="#2d74da"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="300" fill="url(#bg)"/>
+  <path d="M0 0h230l-90 300H0z" fill="#78b8ff" opacity=".65"/>
+  <path d="M600 0H385l65 300h150z" fill="#225fb7" opacity=".8"/>
+  <circle cx="187" cy="150" r="74" fill="none" stroke="#fff" stroke-width="12" opacity=".96"/>
+  <path d="M113 150h148M187 76c-22 24-34 47-34 74s12 50 34 74M187 76c22 24 34 47 34 74s-12 50-34 74M126 110c18 10 39 15 61 15s43-5 61-15M126 190c18-10 39-15 61-15s43 5 61 15" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".96"/>
+  <path d="M294 111h65a34 34 0 0 1 0 68h-22" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+  <path d="M306 189h-65a34 34 0 0 1 0-68h22" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+  <path d="M274 150h52" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="430" cy="96" r="12" fill="#fff" opacity=".9"/>
+  <circle cx="492" cy="150" r="12" fill="#fff" opacity=".9"/>
+  <circle cx="430" cy="204" r="12" fill="#fff" opacity=".9"/>
+  <path d="M430 96h45v108h-45M442 150h50" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
 </svg>
