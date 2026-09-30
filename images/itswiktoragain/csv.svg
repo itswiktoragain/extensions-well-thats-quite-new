@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
-  <rect width="600" height="300" fill="#2bb9a9"/>
-  <path d="M0 0h300L205 300H0z" fill="#45cbbb"/>
-  <path d="M600 0H425l-40 300h215z" fill="#1f9185"/>
-  <rect x="170" y="63" width="260" height="174" rx="20" fill="none" stroke="#fff" stroke-width="14"/>
-  <path d="M170 120h260M170 178h260M257 63v174M344 63v174" stroke="#fff" stroke-width="11"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#36c8b6"/>
+      <stop offset="1" stop-color="#16897f"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="300" fill="url(#bg)"/>
+  <path d="M0 0h260l-88 300H0z" fill="#5ad8c8" opacity=".58"/>
+  <path d="M600 0H402l-12 300h210z" fill="#107067" opacity=".76"/>
+  <path d="M207 58h131l55 55v129a24 24 0 0 1-24 24H207a24 24 0 0 1-24-24V82a24 24 0 0 1 24-24z" fill="none" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M338 58v55h55" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M211 125h154M211 163h154M211 201h154M261 113v100M315 113v100" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".96"/>
+  <circle cx="448" cy="110" r="11" fill="#fff" opacity=".95"/>
+  <circle cx="448" cy="150" r="11" fill="#fff" opacity=".95"/>
+  <circle cx="448" cy="190" r="11" fill="#fff" opacity=".95"/>
+  <path d="M470 110h44M470 150h44M470 190h44" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity=".95"/>
 </svg>
