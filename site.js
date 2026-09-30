@@ -13,6 +13,8 @@ const SOURCES = {
   }
 };
 
+const CACHE_BUSTER = Date.now();
+
 for (const source of Object.values(SOURCES)) {
   source.rawRoot = `https://raw.githubusercontent.com/${source.repo}/${source.branch}`;
   source.githubRoot = `https://github.com/${source.repo}/blob/${source.branch}`;
@@ -124,7 +126,7 @@ function bannerImageUrls(path, source) {
 
   for (const name of names) {
     for (const ext of extensions) {
-      urls.push(`${source.rawRoot}/images/${dir ? `${dir}/` : ""}${name}.${ext}`);
+      urls.push(`${source.rawRoot}/images/${dir ? `${dir}/` : ""}${name}.${ext}?v=${CACHE_BUSTER}`);
     }
   }
   return [...new Set(urls)];
@@ -436,7 +438,7 @@ function makeFallbackExtension(path, source, error = null) {
 
 async function loadExtension(path, source) {
   try {
-    const response = await fetch(`${source.rawRoot}/extensions/${path}.js`);
+    const response = await fetch(`${source.rawRoot}/extensions/${path}.js?v=${CACHE_BUSTER}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
 
     const sourceCode = await response.text();
@@ -525,7 +527,7 @@ async function loadSource(sourceId) {
   }
 
   try {
-    const listResponse = await fetch(`${source.rawRoot}/extensions/extensions.json`);
+    const listResponse = await fetch(`${source.rawRoot}/extensions/extensions.json?v=${CACHE_BUSTER}`, { cache: "no-store" });
     if (!listResponse.ok) throw new Error(`Could not load extension list (${listResponse.status})`);
 
     const paths = parseExtensionList(await listResponse.text());
