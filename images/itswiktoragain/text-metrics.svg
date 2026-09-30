@@ -1,7 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
-  <rect width="600" height="300" fill="#d94f9d"/>
-  <path d="M0 300V0h210l90 300z" fill="#e46eb2"/>
-  <path d="M600 0v300H390l80-300z" fill="#b53b82"/>
-  <path d="M228 208l72-145 72 145M251 161h98" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M155 238h290M155 221v34M445 221v34" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e868b1"/>
+      <stop offset="0.58" stop-color="#c84491"/>
+      <stop offset="1" stop-color="#8d2868"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="300" fill="url(#bg)"/>
+  <circle cx="88" cy="64" r="115" fill="#ff9bd3" opacity=".13"/>
+  <circle cx="535" cy="270" r="160" fill="#6f1f54" opacity=".2"/>
+  <g opacity=".16" stroke="#fff" stroke-width="3" stroke-dasharray="8 10">
+    <path d="M74 63h452M74 236h452M74 150h452"/>
+  </g>
+  <g transform="translate(105 46)">
+    <path d="M95 10L18 196h39l20-52h76l20 52h41L137 10zm20 50l25 55H90z" fill="#6a1b50" opacity=".22" transform="translate(7 8)"/>
+    <path d="M95 10L18 196h39l20-52h76l20 52h41L137 10zm20 50l25 55H90z" fill="#fff"/>
+    <path d="M237 59h128M237 59v21M365 59v21" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <path d="M255 88h92M255 111h72M255 134h109M255 157h55" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".88"/>
+    <path d="M227 178h146" stroke="#fff" stroke-width="11" stroke-linecap="round"/>
+    <path d="M227 165v26M373 165v26" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+    <path d="M246 203h108" stroke="#ffd8ef" stroke-width="6" stroke-linecap="round" opacity=".95"/>
+    <circle cx="246" cy="203" r="7" fill="#ffd8ef"/><circle cx="354" cy="203" r="7" fill="#ffd8ef"/>
+  </g>
+  <g opacity=".48" fill="#fff">
+    <rect x="48" y="76" width="19" height="5" rx="2.5"/><rect x="48" y="105" width="29" height="5" rx="2.5"/><rect x="48" y="134" width="14" height="5" rx="2.5"/><rect x="48" y="163" width="36" height="5" rx="2.5"/><rect x="48" y="192" width="23" height="5" rx="2.5"/>
+  </g>
 </svg>
