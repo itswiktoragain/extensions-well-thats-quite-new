@@ -96,10 +96,15 @@
         menus: {
           styles: {
             acceptReporters: true,
-            items: ["normal", "bold", "italic", "bold italic"].map((value) => ({
-              text: Scratch.translate(value),
-              value,
-            })),
+            items: [
+              { text: Scratch.translate("normal"), value: "normal" },
+              { text: Scratch.translate("bold"), value: "bold" },
+              { text: Scratch.translate("italic"), value: "italic" },
+              {
+                text: Scratch.translate("bold italic"),
+                value: "bold italic",
+              },
+            ],
           },
         },
       };
